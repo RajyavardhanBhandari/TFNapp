@@ -9,9 +9,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
     "expo": "~54.0.0",
     "expo-router": "~6.0.0",
     "react": "19.1.0",
