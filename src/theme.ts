@@ -1,5 +1,5 @@
 import { ColorSchemeName, useColorScheme } from 'react-native';
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, createElement, useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   const systemScheme = useColorScheme();
   const [mode, setMode] = useState<ThemeMode>(systemScheme === 'dark' ? 'dark' : 'light');
   const value = useMemo(() => ({ mode, toggleMode: () => setMode((current) => (current === 'dark' ? 'light' : 'dark')) }), [mode]);
-  return <ThemeModeContext.Provider value={value}>{children}</ThemeModeContext.Provider>;
+  return createElement(ThemeModeContext.Provider, { value }, children);
 }
 
 export function useThemeMode() {
