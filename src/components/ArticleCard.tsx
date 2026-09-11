@@ -14,11 +14,12 @@ function meta(article: TfnArticle) {
 export function ArticleCard({ article, variant = 'standard', onPress }: Props) {
   const theme = useAppTheme();
   const image = article.featuredImage;
+  const imageUrl = variant === 'compact' ? image?.thumbnailUrl ?? image?.url : image?.url;
 
   if (variant === 'compact') {
     return (
       <Pressable accessibilityRole="button" accessibilityLabel={`Open ${article.title}`} onPress={onPress} style={({ pressed }) => [styles.compact, pressed && styles.pressed]}>
-        {image ? <Image source={{ uri: image.url }} accessibilityLabel={image.alt || article.title} resizeMode="cover" style={styles.compactImage} /> : <View style={[styles.compactImage, { backgroundColor: theme.colors.accentSoft }]} />}
+        {imageUrl ? <Image source={{ uri: imageUrl }} accessibilityLabel={image?.alt || article.title} resizeMode="cover" style={styles.compactImage} /> : <View style={[styles.compactImage, { backgroundColor: theme.colors.accentSoft }]} />}
         <View style={styles.compactCopy}>
           <Text numberOfLines={2} style={[styles.compactTitle, { color: theme.colors.text }]}>{article.title}</Text>
           <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.accent }]}>{meta(article)}</Text>
@@ -29,7 +30,7 @@ export function ArticleCard({ article, variant = 'standard', onPress }: Props) {
 
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`Open ${article.title}`} onPress={onPress} style={({ pressed }) => [styles.card, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }, variant === 'featured' && styles.featured, pressed && styles.pressed]}>
-      {image ? <Image source={{ uri: image.url }} accessibilityLabel={image.alt || article.title} resizeMode="cover" style={[styles.image, variant === 'featured' && styles.featuredImage]} /> : <View style={[styles.image, variant === 'featured' && styles.featuredImage, { backgroundColor: theme.colors.accentSoft }]} />}
+      {imageUrl ? <Image source={{ uri: imageUrl }} accessibilityLabel={image?.alt || article.title} resizeMode="cover" style={[styles.image, variant === 'featured' && styles.featuredImage]} /> : <View style={[styles.image, variant === 'featured' && styles.featuredImage, { backgroundColor: theme.colors.accentSoft }]} />}
       <View style={styles.copy}>
         <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.accent }]}>{meta(article)}</Text>
         <Text numberOfLines={variant === 'featured' ? 3 : 2} style={[variant === 'featured' ? styles.featuredTitle : styles.title, { color: theme.colors.text }]}>{article.title}</Text>
