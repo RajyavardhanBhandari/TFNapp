@@ -14,7 +14,7 @@ function meta(article: TfnArticle) {
 export function ArticleCard({ article, variant = 'standard', onPress }: Props) {
   const theme = useAppTheme();
   const image = article.featuredImage;
-  const imageUrl = variant === 'compact' ? image?.thumbnailUrl ?? image?.url : image?.url;
+  const imageUrl = variant === 'featured' ? image?.url : image?.thumbnailUrl ?? image?.url;
 
   if (variant === 'compact') {
     return (
