@@ -7,17 +7,24 @@ export default function ContentTestScreen() {
   const [capabilities, setCapabilities] = useState<TfnWordPressCapabilities>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const [capabilityWarning, setCapabilityWarning] = useState<string>();
 
   const load = async () => {
     setLoading(true);
     setError(undefined);
+    setCapabilityWarning(undefined);
+
     try {
-      const [result, wpCapabilities] = await Promise.all([
-        getArticles({ page: 1, perPage: 10 }),
-        getWordPressCapabilities(),
-      ]);
+      const result = await getArticles({ page: 1, perPage: 10 });
       setArticles(result.items);
-      setCapabilities(wpCapabilities);
+
+      try {
+        const wpCapabilities = await getWordPressCapabilities();
+        setCapabilities(wpCapabilities);
+      } catch (err) {
+        const message = err instanceof TfnApiError ? err.message : 'WordPress capability discovery failed.';
+        setCapabilityWarning(message);
+      }
     } catch (err) {
       setError(err instanceof TfnApiError ? err.message : 'Unable to load TFN content.');
     } finally {
@@ -27,7 +34,7 @@ export default function ContentTestScreen() {
 
   useEffect(() => { void load(); }, []);
 
-  if (loading) return <View style={styles.center}><ActivityIndicator /><Text style={styles.muted}>Checking WordPress and loading real TFN content…</Text></View>;
+  if (loading) return <View style={styles.center}><ActivityIndicator /><Text style={styles.muted}>Loading real TFN content from WordPress…</Text></View>;
   if (error) return <View style={styles.center}><Text style={styles.error}>{error}</Text><Pressable onPress={() => void load()} style={styles.button}><Text style={styles.buttonText}>Retry</Text></Pressable></View>;
   if (!articles.length) return <View style={styles.center}><Text>No published TFN articles were returned.</Text><Pressable onPress={() => void load()} style={styles.button}><Text style={styles.buttonText}>Retry</Text></Pressable></View>;
 
@@ -38,8 +45,16 @@ export default function ContentTestScreen() {
     ListHeaderComponent={
       <View style={styles.headerBlock}>
         <Text style={styles.header}>TFN Content Engine Test</Text>
-        <Text style={styles.status}>WordPress API connected • {capabilities?.postTypes.length ?? 0} post types • {capabilities?.taxonomies.length ?? 0} taxonomies</Text>
-        <Text style={styles.status}>Posts endpoint: {capabilities?.postTypes.find((type) => type.restBase === 'posts')?.restBase ?? 'not reported'}</Text>
+        <Text style={styles.status}>WordPress posts endpoint returned {articles.length} article(s).</Text>
+        <Text style={styles.status}>
+          {capabilities
+            ? `Capability discovery: ${capabilities.postTypes.length} post types • ${capabilities.taxonomies.length} taxonomies`
+            : 'Capability discovery: unavailable'}
+        </Text>
+        {capabilityWarning ? <Text style={styles.warning}>Capability warning: {capabilityWarning}</Text> : null}
+        <Text style={styles.status}>
+          Posts route: {capabilities?.postTypes.find((type) => type.restBase === 'posts')?.restBase ?? 'verified by content request'}
+        </Text>
       </View>
     }
     renderItem={({ item }) => <View style={styles.card}>
@@ -58,6 +73,7 @@ const styles = StyleSheet.create({
   headerBlock: { gap: 6, marginBottom: 4 },
   header: { fontSize: 24, fontWeight: '800' },
   status: { fontSize: 12, opacity: 0.65 },
+  warning: { fontSize: 12, color: '#8a5a00' },
   card: { borderRadius: 16, padding: 14, backgroundColor: '#f4f4f4', gap: 7 },
   image: { width: '100%', height: 190, borderRadius: 12, backgroundColor: '#ddd' },
   category: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', opacity: 0.6 },
