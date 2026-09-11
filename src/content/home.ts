@@ -23,8 +23,8 @@ function findCategory(categories: TfnCategory[], slugs: string[], names: string[
   );
 }
 
-function uniqueArticles(articles: TfnArticle[]): TfnArticle[] {
-  const seen = new Set<number>();
+function uniqueArticles(articles: TfnArticle[], excludedIds: Set<number> = new Set()): TfnArticle[] {
+  const seen = new Set<number>(excludedIds);
   return articles.filter((article) => {
     if (seen.has(article.id)) return false;
     seen.add(article.id);
@@ -61,8 +61,8 @@ export async function getHomeBaseContent(): Promise<HomeBaseContent> {
   return result;
 }
 
-export async function getHomeSections(categories: TfnCategory[]): Promise<HomeSections> {
-  const cacheKey = 'home:sections:v1';
+export async function getHomeSections(categories: TfnCategory[], excludedIds: number[] = []): Promise<HomeSections> {
+  const cacheKey = `home:sections:v2:${[...excludedIds].sort((a, b) => a - b).join(',')}`;
   const cached = getCached<HomeSections>(cacheKey);
   if (cached) return cached;
 
@@ -82,13 +82,20 @@ export async function getHomeSections(categories: TfnCategory[]): Promise<HomeSe
 
   const [fundingResult, founderResult, startupResult, technologyResult, aiResult] = await Promise.allSettled(requests);
   const sectionItems = (result: typeof fundingResult) => result.status === 'fulfilled' ? result.value.items : [];
+  const usedIds = new Set(excludedIds);
+
+  const takeUnique = (result: typeof fundingResult) => {
+    const items = uniqueArticles(sectionItems(result), usedIds);
+    items.forEach((article) => usedIds.add(article.id));
+    return items;
+  };
 
   const result: HomeSections = {
-    funding: uniqueArticles(sectionItems(fundingResult)),
-    founderStories: uniqueArticles(sectionItems(founderResult)),
-    startupStories: uniqueArticles(sectionItems(startupResult)),
-    technology: uniqueArticles(sectionItems(technologyResult)),
-    ai: uniqueArticles(sectionItems(aiResult)),
+    funding: takeUnique(fundingResult),
+    founderStories: takeUnique(founderResult),
+    startupStories: takeUnique(startupResult),
+    technology: takeUnique(technologyResult),
+    ai: takeUnique(aiResult),
   };
 
   setCached(cacheKey, result);
@@ -97,6 +104,6 @@ export async function getHomeSections(categories: TfnCategory[]): Promise<HomeSe
 
 export async function getHomeContent(): Promise<HomeContent> {
   const base = await getHomeBaseContent();
-  const sections = await getHomeSections(base.categories);
+  const sections = await getHomeSections(base.categories, base.latest.map((article) => article.id));
   return { ...base, ...sections };
 }
