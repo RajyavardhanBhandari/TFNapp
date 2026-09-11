@@ -227,6 +227,7 @@ export async function getArticles(params: { page?: number; perPage?: number; cat
     page,
     per_page: perPage,
     categories: params.categoryId,
+    status: 'publish',
     _embed: 1,
   });
 
