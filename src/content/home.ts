@@ -1,0 +1,71 @@
+import { getCached, setCached } from './cache';
+import { getArticles, getCategories } from './wordpress';
+import type { TfnArticle, TfnCategory } from './types';
+
+export type HomeContent = {
+  latest: TfnArticle[];
+  featured?: TfnArticle;
+  forYou: TfnArticle[];
+  funding: TfnArticle[];
+  founderStories: TfnArticle[];
+  startupStories: TfnArticle[];
+  technology: TfnArticle[];
+  ai: TfnArticle[];
+  categories: TfnCategory[];
+};
+
+function findCategory(categories: TfnCategory[], slugs: string[], names: string[]): TfnCategory | undefined {
+  return categories.find((category) => slugs.includes(category.slug.toLowerCase()) || names.includes(category.name.toLowerCase()));
+}
+
+function uniqueArticles(articles: TfnArticle[]): TfnArticle[] {
+  const seen = new Set<number>();
+  return articles.filter((article) => {
+    if (seen.has(article.id)) return false;
+    seen.add(article.id);
+    return true;
+  });
+}
+
+export async function getHomeContent(): Promise<HomeContent> {
+  const cacheKey = 'home:content:v1';
+  const cached = getCached<HomeContent>(cacheKey);
+  if (cached) return cached;
+
+  const categoryPage = await getCategories({ perPage: 100 });
+  const categories = categoryPage.items;
+
+  const fundingCategory = findCategory(categories, ['funding'], ['funding']);
+  const founderCategory = findCategory(categories, ['founder-first', 'founder-stories'], ['founder first', 'founder stories']);
+  const startupCategory = findCategory(categories, ['startup-stories'], ['startup stories']);
+  const technologyCategory = findCategory(categories, ['technology'], ['technology']);
+  const aiCategory = findCategory(categories, ['artificial-intelligence', 'ai-economy'], ['artificial intelligence', 'ai economy']);
+
+  const [latestPage, fundingPage, founderPage, startupPage, technologyPage, aiPage] = await Promise.all([
+    getArticles({ page: 1, perPage: 12 }),
+    fundingCategory ? getArticles({ page: 1, perPage: 6, categoryId: fundingCategory.id }) : Promise.resolve({ items: [], pagination: { page: 1, perPage: 6, total: 0, totalPages: 0, hasNextPage: false } }),
+    founderCategory ? getArticles({ page: 1, perPage: 6, categoryId: founderCategory.id }) : Promise.resolve({ items: [], pagination: { page: 1, perPage: 6, total: 0, totalPages: 0, hasNextPage: false } }),
+    startupCategory ? getArticles({ page: 1, perPage: 6, categoryId: startupCategory.id }) : Promise.resolve({ items: [], pagination: { page: 1, perPage: 6, total: 0, totalPages: 0, hasNextPage: false } }),
+    technologyCategory ? getArticles({ page: 1, perPage: 6, categoryId: technologyCategory.id }) : Promise.resolve({ items: [], pagination: { page: 1, perPage: 6, total: 0, totalPages: 0, hasNextPage: false } }),
+    aiCategory ? getArticles({ page: 1, perPage: 6, categoryId: aiCategory.id }) : Promise.resolve({ items: [], pagination: { page: 1, perPage: 6, total: 0, totalPages: 0, hasNextPage: false } }),
+  ]);
+
+  const latest = uniqueArticles(latestPage.items);
+  const featured = latest[0];
+  const forYou = latest.slice(1, 5);
+
+  const result: HomeContent = {
+    latest,
+    featured,
+    forYou,
+    funding: uniqueArticles(fundingPage.items),
+    founderStories: uniqueArticles(founderPage.items),
+    startupStories: uniqueArticles(startupPage.items),
+    technology: uniqueArticles(technologyPage.items),
+    ai: uniqueArticles(aiPage.items),
+    categories,
+  };
+
+  setCached(cacheKey, result);
+  return result;
+}
