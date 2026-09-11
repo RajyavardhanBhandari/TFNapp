@@ -10,12 +10,12 @@ export async function getHomeContent(): Promise<HomeContent> {
  const categoryPage=await getCategories({perPage:100}); const categories=categoryPage.items;
  const fundingCategory=findCategory(categories,['funding'],['funding']); const founderCategory=findCategory(categories,['founder-first','founder-stories'],['founder first','founder stories']); const startupCategory=findCategory(categories,['startup-stories'],['startup stories']); const technologyCategory=findCategory(categories,['technology'],['technology']); const aiCategory=findCategory(categories,['artificial-intelligence','ai-economy'],['artificial intelligence','ai economy']);
  const requests = [
-   getArticles({page:1,perPage:6}),
-   fundingCategory?getArticles({page:1,perPage:4,categoryId:fundingCategory.id}):Promise.resolve(empty()),
-   founderCategory?getArticles({page:1,perPage:4,categoryId:founderCategory.id}):Promise.resolve(empty()),
-   startupCategory?getArticles({page:1,perPage:4,categoryId:startupCategory.id}):Promise.resolve(empty()),
-   technologyCategory?getArticles({page:1,perPage:4,categoryId:technologyCategory.id}):Promise.resolve(empty()),
-   aiCategory?getArticles({page:1,perPage:4,categoryId:aiCategory.id}):Promise.resolve(empty()),
+   getArticles({page:1,perPage:6,includeContent:false}),
+   fundingCategory?getArticles({page:1,perPage:4,categoryId:fundingCategory.id,includeContent:false}):Promise.resolve(empty()),
+   founderCategory?getArticles({page:1,perPage:4,categoryId:founderCategory.id,includeContent:false}):Promise.resolve(empty()),
+   startupCategory?getArticles({page:1,perPage:4,categoryId:startupCategory.id,includeContent:false}):Promise.resolve(empty()),
+   technologyCategory?getArticles({page:1,perPage:4,categoryId:technologyCategory.id,includeContent:false}):Promise.resolve(empty()),
+   aiCategory?getArticles({page:1,perPage:4,categoryId:aiCategory.id,includeContent:false}):Promise.resolve(empty()),
  ];
  const [latestResult,fundingResult,founderResult,startupResult,technologyResult,aiResult] = await Promise.allSettled(requests);
  if (latestResult.status === 'rejected') throw latestResult.reason;
