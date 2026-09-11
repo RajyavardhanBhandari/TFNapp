@@ -20,8 +20,10 @@ export function BottomNav() {
         const active = pathname === item.path || (item.path === '/home' && pathname === '/');
         return (
           <Pressable key={item.path} accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={item.label} onPress={() => { if (!active) router.replace(item.path as never); }} style={styles.item}>
-            <Text style={[styles.icon, { color: active ? theme.colors.text : theme.colors.mutedText }]}>{item.icon}</Text>
-            <Text style={[styles.label, { color: active ? theme.colors.text : theme.colors.mutedText }]}>{item.label}</Text>
+            <View style={[styles.activePill, active && { backgroundColor: theme.colors.accentSoft }]}>
+              <Text style={[styles.icon, { color: active ? theme.colors.accent : theme.colors.mutedText }]}>{item.icon}</Text>
+            </View>
+            <Text style={[styles.label, { color: active ? theme.colors.accent : theme.colors.mutedText }]}>{item.label}</Text>
           </Pressable>
         );
       })}
@@ -29,4 +31,10 @@ export function BottomNav() {
   );
 }
 
-const styles = StyleSheet.create({ bar: { minHeight: 68, paddingBottom: 6, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row' }, item: { flex: 1, minHeight: 56, alignItems: 'center', justifyContent: 'center' }, icon: { fontSize: 21, lineHeight: 25 }, label: { marginTop: 2, fontSize: 11, fontWeight: '600' } });
+const styles = StyleSheet.create({
+  bar: { minHeight: 68, paddingBottom: 6, paddingTop: 5, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row' },
+  item: { flex: 1, minHeight: 56, alignItems: 'center', justifyContent: 'center' },
+  activePill: { minWidth: 38, minHeight: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
+  icon: { fontSize: 20, lineHeight: 24 },
+  label: { marginTop: 2, fontSize: 11, fontWeight: '700' },
+});
