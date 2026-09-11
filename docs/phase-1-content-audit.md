@@ -7,6 +7,7 @@
 - WordPress is the actual TFN editorial CMS/backend and remains the source of truth.
 - The accessible TFN frontend repository is a custom/static frontend; it does not contain the WordPress CMS implementation or a documented app API contract.
 - The transferred `thefoundernation-backend` and `thefoundernation-admin` GitHub repositories are currently empty and are therefore not treated as the WordPress implementation.
+- The public TFN website currently exposes real startup/media content and article pages, confirming the editorial source exists on the production website; this does not by itself verify the REST API contract.
 
 ## App content architecture implemented
 
@@ -15,7 +16,7 @@
 The app uses a dedicated WordPress content service rather than making API calls from UI components. Normalized app models cover articles, categories, authors, images and pagination. The service includes timeout/error handling and a lightweight 60-second in-memory cache. No editorial article mirror was added to Supabase in Phase 1.
 
 The current service supports:
-- published WordPress posts
+- explicitly requested published WordPress posts
 - categories and tags
 - embedded author data
 - embedded featured-media data
@@ -24,6 +25,8 @@ The current service supports:
 - article lookup by WordPress ID
 - article lookup by WordPress slug
 - WordPress REST capability discovery for post types and taxonomies
+
+Capability discovery is treated as supplementary diagnostics. The engineering verification screen can still display successfully retrieved article content when `/types` or `/taxonomies` discovery is unavailable, while surfacing the capability failure as a warning.
 
 ## Live API verification
 
@@ -50,8 +53,9 @@ The implementation therefore uses the standard WordPress REST resources as the i
 - author
 - publication date
 - featured image
-- WordPress capability counts
+- WordPress capability counts when capability discovery is available
 - loading, error, empty and retry states
+- a capability warning rather than failing the entire content check when only capability discovery fails
 
 This is an engineering verification surface only. It is not the final Home experience and should not be carried into later product UI without purpose.
 
