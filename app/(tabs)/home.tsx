@@ -19,7 +19,7 @@ function Section({ eyebrow, title, action, onAction, children }: { eyebrow?: str
           {eyebrow ? <Text style={[styles.eyebrow, { color: theme.colors.accent }]}>{eyebrow}</Text> : null}
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{title}</Text>
         </View>
-        {action && onAction ? <Pressable accessibilityRole="button" onPress={onAction} hitSlop={8}><Text style={[styles.sectionAction, { color: theme.colors.accent }]}>{action}</Text></Pressable> : null}
+        {action && onAction ? <Pressable accessibilityRole="button" accessibilityLabel={`${action} ${title}`} onPress={onAction} hitSlop={8}><Text style={[styles.sectionAction, { color: theme.colors.accent }]}>{action}</Text></Pressable> : null}
       </View>
       {children}
     </View>
@@ -41,10 +41,10 @@ function CategoryRail({ categories, onOpen }: { categories: HomeBaseContent['cat
   const topics = [...ordered, ...remaining].slice(0, 8);
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.topicRail}>
-      <Pressable onPress={onOpen} style={[styles.topicPill, { backgroundColor: theme.colors.accentSoft }]}><Text style={[styles.topicText, { color: theme.colors.accent }]}>For You</Text></Pressable>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.topicRail} accessibilityLabel="TFN topics">
+      <Pressable accessibilityRole="button" accessibilityLabel="Open For You" onPress={onOpen} style={[styles.topicPill, { backgroundColor: theme.colors.accentSoft }]}><Text style={[styles.topicText, { color: theme.colors.accent }]}>For You</Text></Pressable>
       {topics.map((category) => (
-        <Pressable key={category.id} onPress={onOpen} style={[styles.topicPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+        <Pressable key={category.id} accessibilityRole="button" accessibilityLabel={`Open ${category.name}`} onPress={onOpen} style={[styles.topicPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
           <Text numberOfLines={1} style={[styles.topicText, { color: theme.colors.text }]}>{category.name}</Text>
         </Pressable>
       ))}
@@ -77,7 +77,7 @@ export default function HomeScreen() {
       setSectionsLoading(true);
 
       try {
-        const sections = await getHomeSections(base.categories);
+        const sections = await getHomeSections(base.categories, base.latest.map((article) => article.id));
         setData((current) => current ? { ...current, ...sections } : current);
       } finally {
         setSectionsLoading(false);
@@ -100,7 +100,12 @@ export default function HomeScreen() {
       setLoadingMore(true);
       const next = page + 1;
       const result = await getArticles({ page: next, perPage: 8, includeContent: false });
-      setData((current) => current ? { ...current, latest: [...current.latest, ...result.items] } : current);
+      setData((current) => {
+        if (!current) return current;
+        const existing = new Set(current.latest.map((article) => article.id));
+        const freshItems = result.items.filter((article) => !existing.has(article.id));
+        return { ...current, latest: [...current.latest, ...freshItems] };
+      });
       setPage(next);
       setHasMore(result.pagination.hasNextPage);
     } finally {
@@ -136,7 +141,7 @@ export default function HomeScreen() {
             <Text style={[styles.stateKicker, { color: theme.colors.accent }]}>THE FOUNDER NATION</Text>
             <Text style={[styles.stateTitle, { color: theme.colors.text }]}>Your startup briefing is taking a break.</Text>
             <Text style={[styles.stateBody, { color: theme.colors.mutedText }]}>We could not load the latest stories.</Text>
-            <Pressable accessibilityRole="button" onPress={() => void load()} style={({ pressed }) => [styles.retry, { backgroundColor: theme.colors.brand }, pressed && styles.pressed]}><Text style={{ color: theme.colors.inverseText, fontWeight: '800' }}>Try again</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Try again" onPress={() => void load()} style={({ pressed }) => [styles.retry, { backgroundColor: theme.colors.brand }, pressed && styles.pressed]}><Text style={{ color: theme.colors.inverseText, fontWeight: '800' }}>Try again</Text></Pressable>
           </View>
         ) : data ? (
           <>
@@ -145,7 +150,7 @@ export default function HomeScreen() {
             {horizontal('PERSONALISED FEED', 'For You', data.forYou)}
 
             {sectionsLoading ? (
-              <View style={styles.loadingSections}>
+              <View style={styles.loadingSections} accessibilityLiveRegion="polite">
                 <ActivityIndicator color={theme.colors.accent} />
                 <Text style={[styles.loadingSectionsText, { color: theme.colors.mutedText }]}>Loading more from TFN…</Text>
               </View>
@@ -167,7 +172,7 @@ export default function HomeScreen() {
             </Section>
 
             <Section eyebrow="JUST IN" title="Latest News">
-              {data.latest.map((article, index) => <ArticleCard key={`${article.id}-${index}`} article={article} onPress={() => open(article.id)} />)}
+              {data.latest.map((article) => <ArticleCard key={article.id} article={article} onPress={() => open(article.id)} />)}
               {loadingMore ? <ActivityIndicator style={styles.loader} color={theme.colors.accent} /> : null}
               {!hasMore ? <Text style={[styles.end, { color: theme.colors.mutedText }]}>You’re all caught up.</Text> : null}
             </Section>
