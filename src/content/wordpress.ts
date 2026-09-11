@@ -73,12 +73,6 @@ const SUMMARY_POST_FIELDS = [
   'tags',
   'featured_media',
   '_links',
-  '_embedded.author.id',
-  '_embedded.author.name',
-  '_embedded.author.slug',
-  '_embedded.author.description',
-  '_embedded.author.link',
-  '_embedded.author.avatar_urls',
   '_embedded.wp:featuredmedia.id',
   '_embedded.wp:featuredmedia.source_url',
   '_embedded.wp:featuredmedia.alt_text',
@@ -112,10 +106,10 @@ export class TfnApiError extends Error {
   }
 }
 
-async function request<T>(
+async function request(
   path: string,
   params?: Record<string, string | number | undefined>,
-): Promise<{ data: T; headers: Headers }> {
+): Promise<{ data: unknown; headers: Headers }> {
   const url = new URL(`${TFN_WORDPRESS_BASE_URL}/${path.replace(/^\//, '')}`);
   Object.entries(params ?? {}).forEach(([key, value]) => {
     if (value !== undefined) url.searchParams.set(key, String(value));
@@ -129,7 +123,7 @@ async function request<T>(
     if (!response.ok) {
       throw new TfnApiError(`TFN API request failed (${response.status})`, response.status);
     }
-    return { data: (await response.json()) as T, headers: response.headers };
+    return { data: await response.json(), headers: response.headers };
   } catch (error) {
     if (error instanceof TfnApiError) throw error;
     if (error instanceof Error && error.name === 'AbortError') {
@@ -318,7 +312,7 @@ export async function getArticles(
   const page = params.page ?? 1;
   const perPage = params.perPage ?? 10;
   const includeContent = params.includeContent ?? true;
-  const cacheKey = `articles:${page}:${perPage}:${params.categoryId ?? 'all'}:${includeContent ? 'full' : 'summary'}`;
+  const cacheKey = `articles:${page}:${perPage}:${params.categoryId ?? 'all'}:${includeContent ? 'full' : 'summary-v2'}`;
   const cached = getCached<TfnArticlePage>(cacheKey);
   if (cached) return cached;
 
@@ -328,7 +322,7 @@ export async function getArticles(
     per_page: perPage,
     categories: params.categoryId,
     status: 'publish',
-    _embed: 'author,wp:featuredmedia,wp:term',
+    _embed: includeContent ? 'author,wp:featuredmedia,wp:term' : 'wp:featuredmedia,wp:term',
     _fields: fields,
   });
 
