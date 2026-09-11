@@ -6,6 +6,7 @@ import type {
   TfnImage,
   TfnPagination,
 } from './types';
+import { getCached, setCached } from './cache';
 
 export const TFN_WORDPRESS_BASE_URL = 'https://thefoundernation.com/wp-json/wp/v2';
 
@@ -122,18 +123,29 @@ function normalizePost(post: WpPost, categories: TfnCategory[], tags: WpTag[]): 
 export async function getCategories(params: { perPage?: number; page?: number } = {}): Promise<{ items: TfnCategory[]; pagination: TfnPagination }> {
   const page = params.page ?? 1;
   const perPage = params.perPage ?? 100;
+  const cacheKey = `categories:${page}:${perPage}`;
+  const cached = getCached<{ items: TfnCategory[]; pagination: TfnPagination }>(cacheKey);
+  if (cached) return cached;
+
   const response = await request<WpCategory[]>('categories', { page, per_page: perPage });
   const total = Number(response.headers.get('X-WP-Total') ?? response.data.length);
   const totalPages = Number(response.headers.get('X-WP-TotalPages') ?? 1);
-  return {
+  const result = {
     items: response.data.map((category) => ({ id: category.id, name: category.name, slug: category.slug, description: category.description, parent: category.parent })),
     pagination: { page, perPage, total, totalPages, hasNextPage: page < totalPages },
   };
+
+  setCached(cacheKey, result);
+  return result;
 }
 
 export async function getArticles(params: { page?: number; perPage?: number; categoryId?: number } = {}): Promise<TfnArticlePage> {
   const page = params.page ?? 1;
   const perPage = params.perPage ?? 10;
+  const cacheKey = `articles:${page}:${perPage}:${params.categoryId ?? 'all'}`;
+  const cached = getCached<TfnArticlePage>(cacheKey);
+  if (cached) return cached;
+
   const response = await request<WpPost[]>('posts', {
     page,
     per_page: perPage,
@@ -155,8 +167,11 @@ export async function getArticles(params: { page?: number; perPage?: number; cat
 
   const total = Number(response.headers.get('X-WP-Total') ?? response.data.length);
   const totalPages = Number(response.headers.get('X-WP-TotalPages') ?? 1);
-  return {
+  const result = {
     items: response.data.map((post) => normalizePost(post, normalizedCategories(post), normalizedTags(post))),
     pagination: { page, perPage, total, totalPages, hasNextPage: page < totalPages },
   };
+
+  setCached(cacheKey, result);
+  return result;
 }
