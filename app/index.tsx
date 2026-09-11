@@ -1,36 +1,45 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-export default function HomeScreen() {
+import { Screen } from '@/src/components/ui/Screen';
+import { Text } from '@/src/components/ui/Text';
+import { useTheme } from '@/src/theme/ThemeProvider';
+
+export default function FoundationScreen() {
+  const theme = useTheme();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.brand}>TFN</Text>
-      <Text style={styles.title}>The Founder Nation</Text>
-      <Text style={styles.subtitle}>Startup ecosystem, built for mobile.</Text>
-    </View>
+    <Screen>
+      <View style={styles.content}>
+        <Text style={[styles.eyebrow, { color: theme.colors.mutedText }]}>TFN · FOUNDATION</Text>
+        <Text style={styles.brand}>The Founder Nation</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.mutedText }]}>Mobile foundation ready for Phase 1.</Text>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    alignItems: 'center',
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.5,
   },
   brand: {
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: 2,
-  },
-  title: {
     marginTop: 12,
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   subtitle: {
-    marginTop: 8,
+    marginTop: 10,
     fontSize: 16,
-    opacity: 0.65,
+    lineHeight: 23,
     textAlign: 'center',
   },
 });
