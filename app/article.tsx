@@ -1,0 +1,48 @@
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { AppHeader } from '../src/components/AppHeader';
+import { Screen } from '../src/components/Screen';
+import { getArticleById, type TfnArticle } from '../src/content';
+import { useAppTheme } from '../src/theme';
+
+export default function ArticleScreen() {
+  const theme = useAppTheme();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const [article, setArticle] = useState<TfnArticle>();
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    void getArticleById(Number(id)).then(setArticle).catch(() => setError(true));
+  }, [id]);
+
+  return (
+    <Screen padding={false}>
+      <AppHeader back title="Article" />
+      <ScrollView contentContainerStyle={styles.content}>
+        {!article && !error ? <ActivityIndicator color={theme.colors.icon} /> : null}
+        {error ? <Text style={[styles.error, { color: theme.colors.text }]}>This article could not be loaded.</Text> : null}
+        {article ? (
+          <View>
+            <Text style={[styles.meta, { color: theme.colors.mutedText }]}>{article.categories[0]?.name ?? 'TFN'}</Text>
+            <Text style={[styles.title, { color: theme.colors.text }]}>{article.title}</Text>
+            <Text style={[styles.byline, { color: theme.colors.mutedText }]}>{article.author?.name ?? 'The Founder Nation'} · {new Date(article.publishedAt).toLocaleDateString()}</Text>
+            <Text style={[styles.body, { color: theme.colors.text }]}>{article.excerpt}</Text>
+            <Text style={[styles.note, { color: theme.colors.mutedText }]}>Full article rendering is part of Phase 4. This route is intentionally minimal so Home can navigate without duplicating the upcoming article experience.</Text>
+          </View>
+        ) : null}
+      </ScrollView>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: { padding: 18, paddingBottom: 40 },
+  meta: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
+  title: { fontSize: 30, lineHeight: 36, fontWeight: '850' },
+  byline: { marginTop: 12, fontSize: 13 },
+  body: { marginTop: 22, fontSize: 17, lineHeight: 26 },
+  note: { marginTop: 24, fontSize: 13, lineHeight: 20 },
+  error: { textAlign: 'center', marginTop: 80, fontSize: 17 },
+});
