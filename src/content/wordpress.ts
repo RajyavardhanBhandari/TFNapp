@@ -10,6 +10,13 @@ import { getCached, setCached } from './cache';
 
 export const TFN_WORDPRESS_BASE_URL = 'https://thefoundernation.com/wp-json/wp/v2';
 
+export type TfnWordPressCapabilities = {
+  postTypes: Array<{ slug: string; name: string; restBase: string; taxonomies: string[] }>;
+  taxonomies: Array<{ slug: string; name: string; restBase: string }>;
+};
+
+type WpTerm = { id: number; name: string; slug: string; taxonomy?: string; description?: string; parent?: number };
+
 type WpPost = {
   id: number;
   date: string;
@@ -26,6 +33,7 @@ type WpPost = {
   _embedded?: {
     author?: Array<{ id?: number; name?: string; slug?: string; description?: string; link?: string; avatar_urls?: Record<string, string> }>;
     'wp:featuredmedia'?: Array<{ id?: number; source_url?: string; alt_text?: string; media_details?: { width?: number; height?: number } }>;
+    'wp:term'?: WpTerm[][];
   };
 };
 
@@ -38,6 +46,8 @@ type WpCategory = {
 };
 
 type WpTag = { id: number; name: string; slug: string };
+type WpType = { name: string; slug: string; rest_base: string; taxonomies?: string[] };
+type WpTaxonomy = { name: string; slug: string; rest_base: string };
 
 export class TfnApiError extends Error {
   status?: number;
@@ -100,6 +110,16 @@ function authorFromEmbedded(post: WpPost): TfnAuthor | undefined {
   };
 }
 
+function categoryFromTerm(term: WpTerm): TfnCategory {
+  return {
+    id: term.id,
+    name: term.name,
+    slug: term.slug,
+    description: term.description,
+    parent: term.parent,
+  };
+}
+
 function normalizePost(post: WpPost, categories: TfnCategory[], tags: WpTag[]): TfnArticle {
   const featuredImage = imageFromEmbedded(post);
   return {
@@ -120,6 +140,39 @@ function normalizePost(post: WpPost, categories: TfnCategory[], tags: WpTag[]): 
   };
 }
 
+function pagination(page: number, perPage: number, headers: Headers, fallbackLength: number): TfnPagination {
+  const total = Number(headers.get('X-WP-Total') ?? fallbackLength);
+  const totalPages = Number(headers.get('X-WP-TotalPages') ?? 1);
+  return { page, perPage, total, totalPages, hasNextPage: page < totalPages };
+}
+
+export async function getWordPressCapabilities(): Promise<TfnWordPressCapabilities> {
+  const cached = getCached<TfnWordPressCapabilities>('capabilities');
+  if (cached) return cached;
+
+  const [typesResponse, taxonomiesResponse] = await Promise.all([
+    request<Record<string, WpType>>('types'),
+    request<Record<string, WpTaxonomy>>('taxonomies'),
+  ]);
+
+  const result: TfnWordPressCapabilities = {
+    postTypes: Object.entries(typesResponse.data).map(([slug, type]) => ({
+      slug,
+      name: type.name,
+      restBase: type.rest_base,
+      taxonomies: type.taxonomies ?? [],
+    })),
+    taxonomies: Object.entries(taxonomiesResponse.data).map(([slug, taxonomy]) => ({
+      slug,
+      name: taxonomy.name,
+      restBase: taxonomy.rest_base,
+    })),
+  };
+
+  setCached('capabilities', result);
+  return result;
+}
+
 export async function getCategories(params: { perPage?: number; page?: number } = {}): Promise<{ items: TfnCategory[]; pagination: TfnPagination }> {
   const page = params.page ?? 1;
   const perPage = params.perPage ?? 100;
@@ -128,15 +181,39 @@ export async function getCategories(params: { perPage?: number; page?: number } 
   if (cached) return cached;
 
   const response = await request<WpCategory[]>('categories', { page, per_page: perPage });
-  const total = Number(response.headers.get('X-WP-Total') ?? response.data.length);
-  const totalPages = Number(response.headers.get('X-WP-TotalPages') ?? 1);
   const result = {
-    items: response.data.map((category) => ({ id: category.id, name: category.name, slug: category.slug, description: category.description, parent: category.parent })),
-    pagination: { page, perPage, total, totalPages, hasNextPage: page < totalPages },
+    items: response.data.map(categoryFromTerm),
+    pagination: pagination(page, perPage, response.headers, response.data.length),
   };
 
   setCached(cacheKey, result);
   return result;
+}
+
+async function normalizePosts(posts: WpPost[]): Promise<TfnArticle[]> {
+  const embeddedTerms = posts.map((post) => post._embedded?.['wp:term']?.flat() ?? []);
+  const embeddedCategories = new Map<number, WpTerm>();
+  const embeddedTags = new Map<number, WpTerm>();
+  embeddedTerms.flat().forEach((term) => {
+    if (term.taxonomy === 'category') embeddedCategories.set(term.id, term);
+    if (term.taxonomy === 'post_tag') embeddedTags.set(term.id, term);
+  });
+
+  const categoryIds = [...new Set(posts.flatMap((post) => post.categories ?? []).filter((id) => !embeddedCategories.has(id)))];
+  const tagIds = [...new Set(posts.flatMap((post) => post.tags ?? []).filter((id) => !embeddedTags.has(id)))];
+  const [categoryResults, tagResults] = await Promise.all([
+    categoryIds.length ? Promise.all(categoryIds.map((id) => request<WpCategory>(`categories/${id}`).then((result) => result.data))) : Promise.resolve([]),
+    tagIds.length ? Promise.all(tagIds.map((id) => request<WpTag>(`tags/${id}`).then((result) => result.data))) : Promise.resolve([]),
+  ]);
+
+  categoryResults.forEach((category) => embeddedCategories.set(category.id, category));
+  tagResults.forEach((tag) => embeddedTags.set(tag.id, tag));
+
+  return posts.map((post) => {
+    const categories = (post.categories ?? []).map((id) => embeddedCategories.get(id)).filter(Boolean).map((category) => categoryFromTerm(category!));
+    const tags = (post.tags ?? []).map((id) => embeddedTags.get(id)).filter(Boolean) as WpTag[];
+    return normalizePost(post, categories, tags);
+  });
 }
 
 export async function getArticles(params: { page?: number; perPage?: number; categoryId?: number } = {}): Promise<TfnArticlePage> {
@@ -153,25 +230,35 @@ export async function getArticles(params: { page?: number; perPage?: number; cat
     _embed: 1,
   });
 
-  const categoryIds = [...new Set(response.data.flatMap((post) => post.categories ?? []))];
-  const tagIds = [...new Set(response.data.flatMap((post) => post.tags ?? []))];
-  const [categoryResults, tagResults] = await Promise.all([
-    categoryIds.length ? Promise.all(categoryIds.map((id) => request<WpCategory>(`categories/${id}`).then((result) => result.data))) : Promise.resolve([]),
-    tagIds.length ? Promise.all(tagIds.map((id) => request<WpTag>(`tags/${id}`).then((result) => result.data))) : Promise.resolve([]),
-  ]);
-
-  const categoryMap = new Map(categoryResults.map((category) => [category.id, category]));
-  const tagMap = new Map(tagResults.map((tag) => [tag.id, tag]));
-  const normalizedCategories = (post: WpPost) => (post.categories ?? []).map((id) => categoryMap.get(id)).filter(Boolean).map((category) => ({ id: category!.id, name: category!.name, slug: category!.slug, description: category!.description, parent: category!.parent }));
-  const normalizedTags = (post: WpPost) => (post.tags ?? []).map((id) => tagMap.get(id)).filter(Boolean) as WpTag[];
-
-  const total = Number(response.headers.get('X-WP-Total') ?? response.data.length);
-  const totalPages = Number(response.headers.get('X-WP-TotalPages') ?? 1);
   const result = {
-    items: response.data.map((post) => normalizePost(post, normalizedCategories(post), normalizedTags(post))),
-    pagination: { page, perPage, total, totalPages, hasNextPage: page < totalPages },
+    items: await normalizePosts(response.data),
+    pagination: pagination(page, perPage, response.headers, response.data.length),
   };
 
   setCached(cacheKey, result);
   return result;
+}
+
+export async function getArticleById(id: number): Promise<TfnArticle> {
+  const cacheKey = `article:id:${id}`;
+  const cached = getCached<TfnArticle>(cacheKey);
+  if (cached) return cached;
+
+  const response = await request<WpPost>(`posts/${id}`, { _embed: 1 });
+  const [article] = await normalizePosts([response.data]);
+  setCached(cacheKey, article);
+  return article;
+}
+
+export async function getArticleBySlug(slug: string): Promise<TfnArticle | undefined> {
+  const cacheKey = `article:slug:${slug}`;
+  const cached = getCached<TfnArticle>(cacheKey);
+  if (cached) return cached;
+
+  const response = await request<WpPost[]>('posts', { slug, _embed: 1, per_page: 1 });
+  if (!response.data.length) return undefined;
+
+  const [article] = await normalizePosts(response.data);
+  setCached(cacheKey, article);
+  return article;
 }
