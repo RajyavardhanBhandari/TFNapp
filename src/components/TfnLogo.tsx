@@ -16,10 +16,10 @@ export function TfnLogo() {
 }
 
 const styles = StyleSheet.create({
-  container: { width: 112, justifyContent: 'center' },
-  mark: { fontFamily: 'Georgia', fontSize: 30, lineHeight: 31, fontWeight: '700', letterSpacing: -2 },
+  container: { width: 124, justifyContent: 'center' },
+  mark: { fontFamily: 'Georgia', fontSize: 34, lineHeight: 34, fontWeight: '700', letterSpacing: -2.8 },
   ruleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 1 },
   rule: { flex: 1, height: 4, borderRadius: 3 },
-  dot: { width: 5, height: 5, borderRadius: 3, marginLeft: 3 },
-  tagline: { fontSize: 5.5, lineHeight: 8, fontWeight: '800', letterSpacing: 1.15, marginTop: 1 },
+  dot: { width: 6, height: 6, borderRadius: 3, marginLeft: 4 },
+  tagline: { fontSize: 6.2, lineHeight: 8, fontWeight: '800', letterSpacing: 1.35, marginTop: 2 },
 });
