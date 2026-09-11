@@ -1,0 +1,56 @@
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import type { TfnArticle } from '../content';
+import { useAppTheme } from '../theme';
+
+type Props = { article: TfnArticle; variant?: 'standard' | 'compact' | 'featured'; onPress: () => void };
+
+function meta(article: TfnArticle): string {
+  const category = article.categories[0]?.name;
+  const date = new Date(article.publishedAt);
+  const published = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  return [category, published].filter(Boolean).join(' · ');
+}
+
+export function ArticleCard({ article, variant = 'standard', onPress }: Props) {
+  const theme = useAppTheme();
+  const image = article.featuredImage;
+
+  if (variant === 'compact') {
+    return (
+      <Pressable accessibilityRole="button" accessibilityLabel={`Open ${article.title}`} onPress={onPress} style={styles.compact}>
+        {image ? <Image source={{ uri: image.url }} accessibilityLabel={image.alt || article.title} style={styles.compactImage} /> : <View style={[styles.compactImage, { backgroundColor: theme.colors.surface }]} />}
+        <View style={styles.compactCopy}>
+          <Text numberOfLines={2} style={[styles.compactTitle, { color: theme.colors.text }]}>{article.title}</Text>
+          <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.mutedText }]}>{meta(article)}</Text>
+        </View>
+      </Pressable>
+    );
+  }
+
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`Open ${article.title}`} onPress={onPress} style={[styles.card, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }, variant === 'featured' && styles.featured]}>
+      {image ? <Image source={{ uri: image.url }} accessibilityLabel={image.alt || article.title} style={[styles.image, variant === 'featured' && styles.featuredImage]} /> : <View style={[styles.image, variant === 'featured' && styles.featuredImage, { backgroundColor: theme.colors.border }]} />}
+      <View style={styles.copy}>
+        <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.mutedText }]}>{meta(article)}</Text>
+        <Text numberOfLines={variant === 'featured' ? 3 : 2} style={[variant === 'featured' ? styles.featuredTitle : styles.title, { color: theme.colors.text }]}>{article.title}</Text>
+        {variant === 'featured' && article.excerpt ? <Text numberOfLines={2} style={[styles.excerpt, { color: theme.colors.mutedText }]}>{article.excerpt}</Text> : null}
+      </View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, overflow: 'hidden', marginBottom: 12 },
+  featured: { borderWidth: 0 },
+  image: { width: '100%', height: 160 },
+  featuredImage: { height: 220 },
+  copy: { padding: 14 },
+  meta: { fontSize: 12, fontWeight: '700', letterSpacing: 0.2, marginBottom: 7 },
+  title: { fontSize: 17, lineHeight: 22, fontWeight: '750' },
+  featuredTitle: { fontSize: 25, lineHeight: 30, fontWeight: '800' },
+  excerpt: { fontSize: 14, lineHeight: 20, marginTop: 8 },
+  compact: { flexDirection: 'row', gap: 12, marginBottom: 14, minHeight: 82 },
+  compactImage: { width: 108, height: 82, borderRadius: 10 },
+  compactCopy: { flex: 1, justifyContent: 'space-between', paddingVertical: 1 },
+  compactTitle: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
+});
