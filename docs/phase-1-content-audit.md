@@ -7,10 +7,12 @@
 - Current Phase 0 app surface is intentionally minimal: a root Expo Router layout and a simple index screen.
 - Existing package scripts include Expo start commands, lint, and TypeScript typecheck.
 - WordPress remains the planned editorial source of truth.
+- The TFN website frontend repository is now accessible and is a static/custom-coded frontend. It does not expose the WordPress CMS implementation or a documented app API contract in the repository.
+- The TFN WordPress/backend repositories transferred to the project owner are currently empty, so the WordPress installation remains the authoritative backend to inspect.
 
 ## Web/API investigation
 
-The public TFN site was targeted for inspection and the WordPress REST API path was tested from the available web/runtime environment. Direct runtime access was not reliable in this execution environment, so API behavior that could not be directly observed is **not** treated as verified.
+The public TFN site is live and the project continues to target the WordPress REST API as the first app integration path. Direct runtime access to the TFN REST API from this execution environment is still not reliable, so API behavior that could not be directly observed is **not** treated as verified.
 
 ### Verified by implementation contract
 
@@ -20,6 +22,8 @@ The Phase 1 contract requires a WordPress REST integration with:
 - embedded author/media data where supported
 - WordPress pagination headers
 - canonical post links
+
+The current implementation uses the standard WordPress resources `posts`, `categories`, and `tags`, with `_embed=1` for author and featured-media data.
 
 ### Needs investigation / live verification
 
@@ -31,6 +35,7 @@ Before production release, verify against the live TFN installation:
 - exact author/media payloads
 - whether article body HTML contains embeds or custom blocks requiring special handling
 - exact category/tag coverage
+- whether any WordPress security/CDN layer changes API behavior
 
 ## Current recommendation
 
@@ -43,7 +48,8 @@ Use a dedicated content service rather than calling WordPress directly from UI c
 - Article and category retrieval methods.
 - WordPress pagination metadata extraction.
 - Embedded author and featured-media normalization.
-- Minimal real-content verification screen at `/content-test`.
+- Lightweight 60-second in-memory content caching for article/category result sets.
+- Minimal real-content verification screen at `/content-test` with loading, error, empty and retry states.
 
 ## Important limitation
 
