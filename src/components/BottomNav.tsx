@@ -19,7 +19,7 @@ export function BottomNav() {
       {items.map((item) => {
         const active = pathname === item.path || (item.path === '/home' && pathname === '/');
         return (
-          <Pressable key={item.path} accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={item.label} onPress={() => router.replace(item.path as never)} style={styles.item}>
+          <Pressable key={item.path} accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={item.label} onPress={() => { if (!active) router.replace(item.path as never); }} style={styles.item}>
             <Text style={[styles.icon, { color: active ? theme.colors.text : theme.colors.mutedText }]}>{item.icon}</Text>
             <Text style={[styles.label, { color: active ? theme.colors.text : theme.colors.mutedText }]}>{item.label}</Text>
           </Pressable>
