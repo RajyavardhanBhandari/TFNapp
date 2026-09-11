@@ -2,18 +2,12 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { TfnArticle } from '../content';
 import { useAppTheme } from '../theme';
 
-type Props = {
-  article: TfnArticle;
-  variant?: 'standard' | 'compact' | 'featured';
-  onPress: () => void;
-};
+type Props = { article: TfnArticle; variant?: 'standard' | 'compact' | 'featured'; onPress: () => void };
 
 function meta(article: TfnArticle) {
   const category = article.categories[0]?.name;
   const date = new Date(article.publishedAt);
-  const published = Number.isNaN(date.getTime())
-    ? ''
-    : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  const published = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
   return [category, published].filter(Boolean).join(' · ');
 }
 
@@ -23,89 +17,30 @@ export function ArticleCard({ article, variant = 'standard', onPress }: Props) {
 
   if (variant === 'compact') {
     return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Open ${article.title}`}
-        onPress={onPress}
-        style={({ pressed }) => [styles.compact, pressed && styles.pressed]}
-      >
-        {image ? (
-          <Image
-            source={{ uri: image.url }}
-            accessibilityLabel={image.alt || article.title}
-            resizeMode="cover"
-            style={styles.compactImage}
-          />
-        ) : (
-          <View style={[styles.compactImage, { backgroundColor: theme.colors.surface }]} />
-        )}
+      <Pressable accessibilityRole="button" accessibilityLabel={`Open ${article.title}`} onPress={onPress} style={({ pressed }) => [styles.compact, pressed && styles.pressed]}>
+        {image ? <Image source={{ uri: image.url }} accessibilityLabel={image.alt || article.title} resizeMode="cover" style={styles.compactImage} /> : <View style={[styles.compactImage, { backgroundColor: theme.colors.accentSoft }]} />}
         <View style={styles.compactCopy}>
-          <Text numberOfLines={2} style={[styles.compactTitle, { color: theme.colors.text }]}>
-            {article.title}
-          </Text>
-          <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.mutedText }]}>
-            {meta(article)}
-          </Text>
+          <Text numberOfLines={2} style={[styles.compactTitle, { color: theme.colors.text }]}>{article.title}</Text>
+          <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.accent }]}>{meta(article)}</Text>
         </View>
       </Pressable>
     );
   }
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Open ${article.title}`}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        { borderColor: theme.colors.border, backgroundColor: theme.colors.surface },
-        variant === 'featured' && styles.featured,
-        pressed && styles.pressed,
-      ]}
-    >
-      {image ? (
-        <Image
-          source={{ uri: image.url }}
-          accessibilityLabel={image.alt || article.title}
-          resizeMode="cover"
-          style={[styles.image, variant === 'featured' && styles.featuredImage]}
-        />
-      ) : (
-        <View
-          style={[
-            styles.image,
-            variant === 'featured' && styles.featuredImage,
-            { backgroundColor: theme.colors.border },
-          ]}
-        />
-      )}
+    <Pressable accessibilityRole="button" accessibilityLabel={`Open ${article.title}`} onPress={onPress} style={({ pressed }) => [styles.card, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }, variant === 'featured' && styles.featured, pressed && styles.pressed]}>
+      {image ? <Image source={{ uri: image.url }} accessibilityLabel={image.alt || article.title} resizeMode="cover" style={[styles.image, variant === 'featured' && styles.featuredImage]} /> : <View style={[styles.image, variant === 'featured' && styles.featuredImage, { backgroundColor: theme.colors.accentSoft }]} />}
       <View style={styles.copy}>
-        <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.mutedText }]}>
-          {meta(article)}
-        </Text>
-        <Text
-          numberOfLines={variant === 'featured' ? 3 : 2}
-          style={[variant === 'featured' ? styles.featuredTitle : styles.title, { color: theme.colors.text }]}
-        >
-          {article.title}
-        </Text>
-        {variant === 'featured' && article.excerpt ? (
-          <Text numberOfLines={2} style={[styles.excerpt, { color: theme.colors.mutedText }]}>
-            {article.excerpt}
-          </Text>
-        ) : null}
+        <Text numberOfLines={1} style={[styles.meta, { color: theme.colors.accent }]}>{meta(article)}</Text>
+        <Text numberOfLines={variant === 'featured' ? 3 : 2} style={[variant === 'featured' ? styles.featuredTitle : styles.title, { color: theme.colors.text }]}>{article.title}</Text>
+        {variant === 'featured' && article.excerpt ? <Text numberOfLines={2} style={[styles.excerpt, { color: theme.colors.mutedText }]}>{article.excerpt}</Text> : null}
       </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 18,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
+  card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 18, overflow: 'hidden', marginBottom: 12 },
   featured: { borderWidth: 0 },
   image: { width: '100%', height: 160 },
   featuredImage: { height: 250 },
