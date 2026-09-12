@@ -6,12 +6,7 @@ export const PROFILE_ROLES = [
 
 export type ProfileRole = (typeof PROFILE_ROLES)[number];
 export type ProfileGender = 'Male' | 'Female' | 'Prefer not to say';
-
-export const PROFILE_INTERESTS = [
-  'Startups', 'Funding', 'Venture Capital', 'AI', 'Technology', 'SaaS',
-  'Fintech', 'Founder Stories', 'Business', 'Entrepreneurship', 'Enterprise',
-  'Creator Economy', 'Impact', 'Consumer', 'D2C', 'Deeptech',
-] as const;
+export type PersonalizationStatus = 'not_started' | 'completed' | 'skipped';
 
 export type Profile = {
   id: string;
@@ -41,6 +36,7 @@ export type Profile = {
   profile_visibility: 'private' | 'public';
   onboarding_completed: boolean;
   personalization_consent: boolean;
+  personalization_status: PersonalizationStatus;
   created_at: string;
   updated_at: string;
 };
