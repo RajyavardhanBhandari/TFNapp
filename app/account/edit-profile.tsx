@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View  } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppHeader } from '../../src/components/AppHeader';
 import { Screen } from '../../src/components/Screen';
