@@ -28,7 +28,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const value = useMemo(() => ({
     state, session, user: session?.user ?? null, configured: supabaseConfigured,
-    signOut: async () => { if (supabase) await supabase.auth.signOut(); },
+    signOut: async () => {
+      if (!supabase) return;
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
   }), [state, session]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
