@@ -1,10 +1,89 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { useAppTheme } from '../../src/theme';
 import { supabase } from '../../src/lib/supabase';
-import { PROFILE_ROLES, type ProfileRole } from '../../src/user/types';
+import { PROFILE_INTERESTS, PROFILE_ROLES, type ProfileGender, type ProfileRole } from '../../src/user/types';
+import { pickAndUploadAvatar } from '../../src/user/profile';
 
-export default function OnboardingProfile(){ const theme=useAppTheme();const router=useRouter();const [name,setName]=useState('');const [role,setRole]=useState<ProfileRole|null>(null);const [company,setCompany]=useState('');const [busy,setBusy]=useState(false);const [error,setError]=useState(''); async function save(){if(!supabase){setError('Account services are not configured yet.');return;}const {data:{user}}=await supabase.auth.getUser();if(!user){router.replace('/auth/sign-in');return;}setBusy(true);setError('');const {error:e}=await supabase.from('profiles').upsert({id:user.id,display_name:name.trim()||null,role,company_name:company.trim()||null},{onConflict:'id'});setBusy(false);if(e){setError('Your profile could not be saved yet.');return;}router.replace('/');} return <Screen><ScrollView contentContainerStyle={styles.wrap}><Text style={[styles.eyebrow,{color:theme.colors.mutedText}]}>WELCOME TO TFN</Text><Text style={[styles.title,{color:theme.colors.text}]}>Tell us a little about you</Text><Text style={[styles.sub,{color:theme.colors.mutedText}]}>Optional details help us understand your place in the startup ecosystem. You can change them later.</Text><TextInput placeholder="Your name" placeholderTextColor={theme.colors.mutedText} value={name} onChangeText={setName} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/><Text style={[styles.label,{color:theme.colors.text}]}>Your role</Text><View style={styles.roles}>{PROFILE_ROLES.map(item=><Pressable key={item} onPress={()=>setRole(item)} style={[styles.role,{borderColor:role===item?theme.colors.text:theme.colors.border,backgroundColor:role===item?theme.colors.text:theme.colors.surface}]}><Text style={{color:role===item?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</View><TextInput placeholder="Company / startup (optional)" placeholderTextColor={theme.colors.mutedText} value={company} onChangeText={setCompany} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>{error?<Text style={styles.error}>{error}</Text>:null}<Pressable disabled={busy} onPress={save} style={[styles.button,{backgroundColor:theme.colors.accent}]}><Text style={{color:theme.colors.inverseText,fontWeight:'800'}}>{busy?'Saving…':'Continue to TFN'}</Text></Pressable></ScrollView></Screen> }
-const styles=StyleSheet.create({wrap:{maxWidth:560,width:'100%',alignSelf:'center',paddingTop:42,paddingBottom:48},eyebrow:{fontSize:12,fontWeight:'800',letterSpacing:1.5},title:{fontSize:34,fontWeight:'800',marginTop:10},sub:{fontSize:16,lineHeight:24,marginTop:8,marginBottom:24},label:{fontWeight:'800',marginBottom:10},input:{height:52,borderWidth:1,borderRadius:12,paddingHorizontal:16,fontSize:16,marginBottom:14},roles:{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:18},role:{paddingHorizontal:13,paddingVertical:11,borderWidth:1,borderRadius:20},button:{height:52,borderRadius:12,alignItems:'center',justifyContent:'center',marginTop:4},error:{color:'#C62828',marginBottom:8}});
+const GENDERS: ProfileGender[] = ['Male', 'Female', 'Prefer not to say'];
+const STAGES = ['Idea', 'Pre-seed', 'Seed', 'Series A', 'Series B+', 'Bootstrapped', 'Not applicable'];
+
+export default function OnboardingProfile(){
+  const theme=useAppTheme(); const router=useRouter(); const [step,setStep]=useState(1); const [name,setName]=useState(''); const [gender,setGender]=useState<ProfileGender|null>(null); const [phone,setPhone]=useState(''); const [role,setRole]=useState<ProfileRole|null>(null); const [company,setCompany]=useState(''); const [jobTitle,setJobTitle]=useState(''); const [industry,setIndustry]=useState(''); const [location,setLocation]=useState(''); const [website,setWebsite]=useState(''); const [linkedin,setLinkedin]=useState(''); const [instagram,setInstagram]=useState(''); const [bio,setBio]=useState(''); const [startupStage,setStartupStage]=useState(''); const [investorType,setInvestorType]=useState(''); const [college,setCollege]=useState(''); const [fieldOfStudy,setFieldOfStudy]=useState(''); const [interests,setInterests]=useState<string[]>([]); const [avatarPath,setAvatarPath]=useState<string|null>(null); const [avatarPreview,setAvatarPreview]=useState<string|null>(null); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
+
+  const roleFields=useMemo(()=>{
+    if(role==='Founder'||role==='Co-Founder') return 'founder';
+    if(role==='Investor'||role==='VC Professional'||role==='Angel Investor') return 'investor';
+    if(role==='Student') return 'student';
+    return 'professional';
+  },[role]);
+
+  function toggleInterest(item:string){setInterests(current=>current.includes(item)?current.filter(x=>x!==item):[...current,item]);}
+
+  async function chooseAvatar(){
+    try{
+      const {data:{user}}=await supabase!.auth.getUser();
+      if(!user) return;
+      const path=await pickAndUploadAvatar(user.id);
+      if(path){setAvatarPath(path);setAvatarPreview(null);}
+    }catch(e){setError(e instanceof Error?e.message:'Profile photo could not be uploaded yet.');}
+  }
+
+  function next(){
+    setError('');
+    if(step===1 && !name.trim()){setError('Add your name to continue.');return;}
+    if(step===2 && !role){setError('Choose the role that best describes you.');return;}
+    setStep(value=>Math.min(3,value+1));
+  }
+
+  async function save(){
+    if(!supabase){setError('Account services are not configured yet.');return;}
+    const {data:{user}}=await supabase.auth.getUser();
+    if(!user){router.replace('/auth/sign-in');return;}
+    setBusy(true);setError('');
+    const {error:e}=await supabase.from('profiles').upsert({
+      id:user.id, display_name:name.trim()||null, gender, phone_number:phone.trim()||null, role,
+      company_name:company.trim()||null, job_title:jobTitle.trim()||null, industry:industry.trim()||null,
+      location:location.trim()||null, website:website.trim()||null, linkedin_url:linkedin.trim()||null,
+      instagram_url:instagram.trim()||null, bio:bio.trim()||null, startup_stage:startupStage||null,
+      investor_type:investorType.trim()||null, college:college.trim()||null, field_of_study:fieldOfStudy.trim()||null,
+      interests, avatar_url:avatarPath, onboarding_completed:true,
+    },{onConflict:'id'});
+    setBusy(false);
+    if(e){setError('Your profile could not be saved yet. Please try again.');return;}
+    router.replace('/');
+  }
+
+  return <Screen><ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
+    <View style={styles.progressRow}><Text style={[styles.progress,{color:theme.colors.accent}]}>STEP {step} OF 3</Text><Text style={[styles.progress,{color:theme.colors.mutedText}]}>{Math.round(step/3*100)}%</Text></View>
+    {step===1 ? <>
+      <Text style={[styles.eyebrow,{color:theme.colors.mutedText}]}>WELCOME TO TFN</Text><Text style={[styles.title,{color:theme.colors.text}]}>Tell us a little about you</Text><Text style={[styles.sub,{color:theme.colors.mutedText}]}>A few optional details help TFN make your experience more relevant.</Text>
+      <Pressable onPress={chooseAvatar} style={styles.avatarButton}>{avatarPreview?<Image source={{uri:avatarPreview}} style={styles.avatar}/>:<View style={[styles.avatarPlaceholder,{backgroundColor:theme.colors.surface,borderColor:theme.colors.border}]}><Text style={{color:theme.colors.mutedText,fontWeight:'800'}}>Add photo</Text></View>}</Pressable>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Name</Text><TextInput placeholder="Your name" placeholderTextColor={theme.colors.mutedText} value={name} onChangeText={setName} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Gender <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><View style={styles.chips}>{GENDERS.map(item=><Pressable key={item} onPress={()=>setGender(item)} style={[styles.chip,{borderColor:gender===item?theme.colors.text:theme.colors.border,backgroundColor:gender===item?theme.colors.text:theme.colors.surface}]}><Text style={{color:gender===item?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</View>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Phone <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput keyboardType="phone-pad" placeholder="+91…" placeholderTextColor={theme.colors.mutedText} value={phone} onChangeText={setPhone} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+    </> : step===2 ? <>
+      <Text style={[styles.eyebrow,{color:theme.colors.mutedText}]}>YOUR PLACE IN THE ECOSYSTEM</Text><Text style={[styles.title,{color:theme.colors.text}]}>What do you do?</Text><Text style={[styles.sub,{color:theme.colors.mutedText}]}>Choose one role. We’ll only ask for information that makes sense for it.</Text>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Your role</Text><View style={styles.chips}>{PROFILE_ROLES.map(item=><Pressable key={item} onPress={()=>setRole(item)} style={[styles.chip,{borderColor:role===item?theme.colors.text:theme.colors.border,backgroundColor:role===item?theme.colors.text:theme.colors.surface}]}><Text style={{color:role===item?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</View>
+      {roleFields!=='student' ? <><Text style={[styles.label,{color:theme.colors.text}]}>Company / startup</Text><TextInput placeholder="Optional" placeholderTextColor={theme.colors.mutedText} value={company} onChangeText={setCompany} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/><Text style={[styles.label,{color:theme.colors.text}]}>Job title <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput placeholder="e.g. CEO, Partner, Product Manager" placeholderTextColor={theme.colors.mutedText} value={jobTitle} onChangeText={setJobTitle} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/></> : <><Text style={[styles.label,{color:theme.colors.text}]}>College</Text><TextInput placeholder="Your college / university" placeholderTextColor={theme.colors.mutedText} value={college} onChangeText={setCollege} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/><Text style={[styles.label,{color:theme.colors.text}]}>Field of study</Text><TextInput placeholder="e.g. Computer Science, Law" placeholderTextColor={theme.colors.mutedText} value={fieldOfStudy} onChangeText={setFieldOfStudy} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/></>}
+      <Text style={[styles.label,{color:theme.colors.text}]}>Industry / sector <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput placeholder="e.g. Fintech, SaaS, AI" placeholderTextColor={theme.colors.mutedText} value={industry} onChangeText={setIndustry} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Location <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput placeholder="City, Country" placeholderTextColor={theme.colors.mutedText} value={location} onChangeText={setLocation} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+      {roleFields==='founder' ? <><Text style={[styles.label,{color:theme.colors.text}]}>Startup stage</Text><View style={styles.chips}>{STAGES.map(item=><Pressable key={item} onPress={()=>setStartupStage(item)} style={[styles.chip,{borderColor:startupStage===item?theme.colors.text:theme.colors.border,backgroundColor:startupStage===item?theme.colors.text:theme.colors.surface}]}><Text style={{color:startupStage===item?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</View></> : null}
+      {roleFields==='investor' ? <><Text style={[styles.label,{color:theme.colors.text}]}>Investor / fund type <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput placeholder="VC, Angel, Family Office…" placeholderTextColor={theme.colors.mutedText} value={investorType} onChangeText={setInvestorType} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/></> : null}
+      <Text style={[styles.label,{color:theme.colors.text}]}>Short bio <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput multiline numberOfLines={4} placeholder="A sentence or two about you" placeholderTextColor={theme.colors.mutedText} value={bio} onChangeText={setBio} style={[styles.textarea,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+    </> : <>
+      <Text style={[styles.eyebrow,{color:theme.colors.mutedText}]}>MAKE TFN RELEVANT</Text><Text style={[styles.title,{color:theme.colors.text}]}>What do you want to follow?</Text><Text style={[styles.sub,{color:theme.colors.mutedText}]}>Pick as many as you like. You can change these anytime.</Text>
+      <View style={styles.chips}>{PROFILE_INTERESTS.map(item=><Pressable key={item} onPress={()=>toggleInterest(item)} style={[styles.chip,{borderColor:interests.includes(item)?theme.colors.accent:theme.colors.border,backgroundColor:interests.includes(item)?theme.colors.accent:theme.colors.surface}]}><Text style={{color:interests.includes(item)?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</View>
+      <Text style={[styles.label,{color:theme.colors.text}]}>LinkedIn <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput autoCapitalize="none" placeholder="linkedin.com/in/…" placeholderTextColor={theme.colors.mutedText} value={linkedin} onChangeText={setLinkedin} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Instagram <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput autoCapitalize="none" placeholder="instagram.com/…" placeholderTextColor={theme.colors.mutedText} value={instagram} onChangeText={setInstagram} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+      <Text style={[styles.label,{color:theme.colors.text}]}>Website <Text style={{fontWeight:'400',color:theme.colors.mutedText}}>(optional)</Text></Text><TextInput autoCapitalize="none" placeholder="https://…" placeholderTextColor={theme.colors.mutedText} value={website} onChangeText={setWebsite} style={[styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>
+    </>}
+    {error?<Text style={styles.error}>{error}</Text>:null}
+    {step<3?<Pressable onPress={next} style={[styles.button,{backgroundColor:theme.colors.accent}]}><Text style={{color:theme.colors.inverseText,fontWeight:'800'}}>Continue</Text></Pressable>:<Pressable disabled={busy} onPress={save} style={[styles.button,{backgroundColor:theme.colors.accent}]}><Text style={{color:theme.colors.inverseText,fontWeight:'800'}}>{busy?'Saving…':'Finish and enter TFN'}</Text></Pressable>}
+    {step>1?<Pressable onPress={()=>setStep(value=>value-1)} style={styles.back}><Text style={{color:theme.colors.text,fontWeight:'700'}}>Back</Text></Pressable>:null}
+  </ScrollView></Screen>
+}
+
+const styles=StyleSheet.create({wrap:{maxWidth:620,width:'100%',alignSelf:'center',paddingTop:34,paddingBottom:56},progressRow:{flexDirection:'row',justifyContent:'space-between',marginBottom:24},progress:{fontSize:12,fontWeight:'800',letterSpacing:1.2},eyebrow:{fontSize:12,fontWeight:'800',letterSpacing:1.5},title:{fontSize:34,fontWeight:'800',marginTop:10},sub:{fontSize:16,lineHeight:24,marginTop:8,marginBottom:24},label:{fontWeight:'800',marginBottom:8,marginTop:8},input:{height:52,borderWidth:1,borderRadius:12,paddingHorizontal:16,fontSize:16,marginBottom:12},textarea:{minHeight:100,borderWidth:1,borderRadius:12,paddingHorizontal:16,paddingVertical:14,fontSize:16,textAlignVertical:'top',marginBottom:12},chips:{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:16},chip:{paddingHorizontal:13,paddingVertical:11,borderWidth:1,borderRadius:20},button:{height:52,borderRadius:12,alignItems:'center',justifyContent:'center',marginTop:8},back:{alignItems:'center',padding:18},error:{color:'#C62828',marginBottom:8},avatarButton:{alignSelf:'center',marginBottom:22},avatar:{width:96,height:96,borderRadius:48},avatarPlaceholder:{width:96,height:96,borderRadius:48,borderWidth:1,alignItems:'center',justifyContent:'center'}});
