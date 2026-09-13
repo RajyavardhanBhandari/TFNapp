@@ -1,37 +1,132 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Content-Type": "application/json",
+type JsonResponse = {
+  success: boolean;
+  message?: string;
+  error?: string;
 };
 
-function response(body: Record<string, unknown>, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: corsHeaders });
+function jsonResponse(
+  body: JsonResponse,
+  status = 200,
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response("ok", { status: 200, headers: corsHeaders });
-  if (req.method !== "POST") return response({ error: "Method not allowed" }, 405);
+  if (req.method !== "POST") {
+    return jsonResponse(
+      {
+        success: false,
+        error: "Method not allowed",
+      },
+      405,
+    );
+  }
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return response({ error: "Unauthorized" }, 401);
+  const authorization = req.headers.get("Authorization");
 
-  const url = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !serviceRoleKey) return response({ error: "Server configuration missing" }, 500);
+  if (!authorization) {
+    return jsonResponse(
+      {
+        success: false,
+        error: "Missing authorization header",
+      },
+      401,
+    );
+  }
 
-  const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY") ?? serviceRoleKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data: { user }, error: userError } = await userClient.auth.getUser();
-  if (userError || !user) return response({ error: "Unauthorized" }, 401);
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const supabaseServiceRoleKey = Deno.env.get(
+    "SUPABASE_SERVICE_ROLE_KEY",
+  );
 
-  const admin = createClient(url, serviceRoleKey);
-  const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) return response({ error: "Account deletion failed" }, 500);
+  if (
+    !supabaseUrl ||
+    !supabaseAnonKey ||
+    !supabaseServiceRoleKey
+  ) {
+    return jsonResponse(
+      {
+        success: false,
+        error: "Supabase function configuration is incomplete",
+      },
+      500,
+    );
+  }
 
-  return response({ deleted: true });
+  try {
+    const token = authorization.replace(/^Bearer\s+/i, "");
+
+    const userClient = createClient(
+      supabaseUrl,
+      supabaseAnonKey,
+    );
+
+    const {
+      data: { user },
+      error: userError,
+    } = await userClient.auth.getUser(token);
+
+    if (userError || !user) {
+      return jsonResponse(
+        {
+          success: false,
+          error: "The current session is invalid or expired",
+        },
+        401,
+      );
+    }
+
+    const adminClient = createClient(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+    );
+
+    const { error: deleteError } =
+      await adminClient.auth.admin.deleteUser(user.id);
+
+    if (deleteError) {
+      console.error(
+        "SUPABASE DELETE USER ERROR:",
+        deleteError,
+      );
+
+      return jsonResponse(
+        {
+          success: false,
+          error: deleteError.message,
+        },
+        500,
+      );
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error(
+      "DELETE ACCOUNT FUNCTION ERROR:",
+      error,
+    );
+
+    return jsonResponse(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unexpected account deletion error",
+      },
+      500,
+    );
+  }
 });
