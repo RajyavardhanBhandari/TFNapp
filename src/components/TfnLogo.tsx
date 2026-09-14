@@ -3,7 +3,7 @@ import { useAppTheme } from '../theme';
 
 export function TfnLogo() {
   const theme = useAppTheme();
-  const markColor = theme.isDark ? '#FFFFFF' : '#111111';
+  const markColor = theme.mode === 'dark' ? '#FFFFFF' : '#111111';
 
   return (
     <View accessibilityLabel="The Founder Nation" style={styles.container}>
