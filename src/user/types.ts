@@ -1,6 +1,6 @@
 export const PROFILE_ROLES = [
-  'Founder', 'Co-Founder', 'Investor', 'VC Professional', 'Angel Investor',
-  'Entrepreneur', 'Operator', 'Employee', 'Student', 'Mentor / Advisor',
+  'Founder / Co-Founder', 'Investor', 'VC Professional', 'Angel Investor',
+  'Operator', 'Employee', 'Student', 'Mentor / Advisor',
   'Startup Professional', 'Other',
 ] as const;
 
@@ -20,6 +20,7 @@ export type Profile = {
   gender: ProfileGender | null;
   phone_number: string | null;
   role: ProfileRole | null;
+  roles: ProfileRole[];
   company_name: string | null;
   job_title: string | null;
   industry: string | null;
