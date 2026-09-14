@@ -21,7 +21,7 @@ export function AppHeader({ title, back = false }: Props) {
     <View style={[styles.container, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
       <View style={styles.left}>
         {back ? <Pressable accessibilityRole="button" accessibilityLabel="Go back" hitSlop={10} onPress={() => router.back()} style={styles.iconButton}><Text style={[styles.backIcon, { color: theme.colors.icon }]}>‹</Text></Pressable> : null}
-        {title ? <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text> : <TfnLogo />}
+        {title ? <View style={styles.titleGroup}>{back ? <TfnLogo compact /> : null}<Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text></View> : <TfnLogo />}
       </View>
       <View style={styles.actions}>
         <Pressable accessibilityRole="button" accessibilityLabel="Search" hitSlop={8} onPress={() => router.push('/search')} style={styles.iconButton}><SearchIcon color={theme.colors.icon} /></Pressable>
@@ -34,7 +34,8 @@ export function AppHeader({ title, back = false }: Props) {
 
 const styles = StyleSheet.create({
   container: { minHeight: 70, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: StyleSheet.hairlineWidth },
-  left: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  left: { flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 0 },
+  titleGroup: { flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 0 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   title: { fontSize: 20, fontWeight: '800', letterSpacing: 0.2 },
   iconButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
   searchHandle: { position: 'absolute', width: 8, height: 2, borderRadius: 2, transform: [{ rotate: '45deg' }], left: 11, top: 13 },
   bellIcon: { width: 19, height: 21, alignItems: 'center', justifyContent: 'flex-end' },
   bellBody: { width: 15, height: 15, borderWidth: 1.8, borderTopLeftRadius: 9, borderTopRightRadius: 9, borderBottomWidth: 0, marginBottom: 3 },
-  bellClapper: { width: 5, height: 2.5, borderRadius: 2, marginBottom: 0 },
+  bellClapper: { width: 5, height: 2.5, borderRadius: 2 },
   themeButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginLeft: 3 },
   themeIcon: { fontSize: 18, lineHeight: 20, fontWeight: '700' },
 });
