@@ -1,31 +1,28 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { useAppTheme } from '../theme';
+import { Image, StyleSheet, View } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 type Props = { compact?: boolean };
 
+const LIGHT_LOGO = require('../../assets/logos/tfn-logo-light.png');
+const DARK_LOGO = require('../../assets/logos/tfn-logo-dark.png');
+
 export function BrandMark({ compact = false }: Props) {
-  const theme = useAppTheme();
+  const scheme = useColorScheme();
 
   return (
     <View style={styles.wrap}>
-      <View style={[styles.mark, { backgroundColor: theme.colors.text }]}>
-        <Text style={[styles.markText, { color: theme.colors.inverseText }]}>TFN</Text>
-      </View>
-      {!compact ? (
-        <View style={styles.wordmark}>
-          <Text style={[styles.name, { color: theme.colors.text }]}>THE FOUNDER NATION</Text>
-          <Text style={[styles.caption, { color: theme.colors.mutedText }]}>STARTUP · BUSINESS · ECOSYSTEM</Text>
-        </View>
-      ) : null}
+      <Image
+        accessibilityLabel="The Founder Nation"
+        resizeMode="contain"
+        source={scheme === 'dark' ? DARK_LOGO : LIGHT_LOGO}
+        style={compact ? styles.compactLogo : styles.logo}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  mark: { width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  markText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-  wordmark: { justifyContent: 'center' },
-  name: { fontSize: 11, fontWeight: '900', letterSpacing: 1.1 },
-  caption: { fontSize: 7, fontWeight: '800', letterSpacing: 1, marginTop: 2 },
+  wrap: { alignItems: 'flex-start', justifyContent: 'center' },
+  logo: { width: 160, height: 64 },
+  compactLogo: { width: 86, height: 38 },
 });
