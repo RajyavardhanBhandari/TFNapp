@@ -77,6 +77,14 @@ export async function getHomeContent(): Promise<HomeContent> {
     },
   };
 
+  const safeArticles = async (params: Parameters<typeof getArticles>[0]) => {
+    try {
+      return await getArticles(params);
+    } catch {
+      return empty;
+    }
+  };
+
   const [
     latestPage,
     fundingPage,
@@ -87,19 +95,19 @@ export async function getHomeContent(): Promise<HomeContent> {
   ] = await Promise.all([
     getArticles({ page: 1, perPage: 12 }),
     fundingCategory
-      ? getArticles({ page: 1, perPage: 6, categoryId: fundingCategory.id })
+      ? safeArticles({ page: 1, perPage: 6, categoryId: fundingCategory.id })
       : Promise.resolve(empty),
     founderCategory
-      ? getArticles({ page: 1, perPage: 6, categoryId: founderCategory.id })
+      ? safeArticles({ page: 1, perPage: 6, categoryId: founderCategory.id })
       : Promise.resolve(empty),
     startupCategory
-      ? getArticles({ page: 1, perPage: 6, categoryId: startupCategory.id })
+      ? safeArticles({ page: 1, perPage: 6, categoryId: startupCategory.id })
       : Promise.resolve(empty),
     technologyCategory
-      ? getArticles({ page: 1, perPage: 6, categoryId: technologyCategory.id })
+      ? safeArticles({ page: 1, perPage: 6, categoryId: technologyCategory.id })
       : Promise.resolve(empty),
     aiCategory
-      ? getArticles({ page: 1, perPage: 6, categoryId: aiCategory.id })
+      ? safeArticles({ page: 1, perPage: 6, categoryId: aiCategory.id })
       : Promise.resolve(empty),
   ]);
 
