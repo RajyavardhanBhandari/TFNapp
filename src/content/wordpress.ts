@@ -1,9 +1,9 @@
 import type { TfnArticle, TfnArticlePage, TfnAuthor, TfnCategory, TfnImage, TfnPagination } from './types';
 import { getCached, setCached } from './cache';
 export const TFN_WORDPRESS_BASE_URL = 'https://thefoundernation.com/wp-json/wp/v2';
-export type TfnWordPressCapabilities = { postTypes: Array<{ slug: string; name: string; restBase: string; taxonomies: string[] }>; taxonomies: Array<{ slug: string; name: string; restBase: string }> };
+export type TfnWordPressCapabilities = { postTypes: { slug: string; name: string; restBase: string; taxonomies: string[] }[]; taxonomies: { slug: string; name: string; restBase: string }[] };
 type WpTerm = { id: number; name: string; slug: string; taxonomy?: string; description?: string; parent?: number };
-type WpPost = { id: number; date: string; modified: string; slug: string; link: string; title?: { rendered?: string }; excerpt?: { rendered?: string }; content?: { rendered?: string }; author?: number; categories?: number[]; tags?: number[]; featured_media?: number; _embedded?: { author?: Array<{ id?: number; name?: string; slug?: string; description?: string; link?: string; avatar_urls?: Record<string, string> }>; 'wp:featuredmedia'?: Array<{ id?: number; source_url?: string; alt_text?: string; media_details?: { width?: number; height?: number } }>; 'wp:term'?: WpTerm[][] } };
+type WpPost = { id: number; date: string; modified: string; slug: string; link: string; title?: { rendered?: string }; excerpt?: { rendered?: string }; content?: { rendered?: string }; author?: number; categories?: number[]; tags?: number[]; featured_media?: number; _embedded?: { author?: { id?: number; name?: string; slug?: string; description?: string; link?: string; avatar_urls?: Record<string, string> }[]; 'wp:featuredmedia'?: { id?: number; source_url?: string; alt_text?: string; media_details?: { width?: number; height?: number } }[]; 'wp:term'?: WpTerm[][] } };
 type WpCategory = { id: number; name: string; slug: string; description?: string; parent?: number };
 type WpTag = { id: number; name: string; slug: string };
 type WpType = { name: string; slug: string; rest_base: string; taxonomies?: string[] };
