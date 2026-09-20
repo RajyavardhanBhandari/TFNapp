@@ -1,7 +1,7 @@
 import { getArticles } from './wordpress';
 import type { TfnArticle } from './types';
 
-export async function getQuickFeed(perPage = 24): Promise<TfnArticle[]> {
+export async function getQuickFeed(perPage = 8): Promise<TfnArticle[]> {
   const page = await getArticles({ page: 1, perPage });
   const seen = new Set<number>();
   return page.items.filter((article) => {
