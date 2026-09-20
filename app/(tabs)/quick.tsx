@@ -300,7 +300,7 @@ export default function QuickScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.feedbackText, { color: theme.colors.inverseText }]}>INTERESTED</Text>
+                <Text style={[styles.feedbackText, { color: theme.colors.inverseText, backgroundColor: theme.colors.text, borderColor: theme.colors.inverseText, borderWidth: 2, paddingHorizontal: 10, paddingVertical: 6 }]}>INTERESTED</Text>
               </Animated.View>
             </Animated.View>
           </View>
