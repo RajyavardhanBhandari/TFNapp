@@ -3,6 +3,7 @@ import { Link, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { useAppTheme } from '../../src/theme';
+import { BrandMark } from '../../src/components/BrandMark';
 import { supabase } from '../../src/lib/supabase';
 import { signInWithProvider } from '../../src/user/oauth';
 
@@ -27,7 +28,7 @@ export default function SignInScreen() {
   }
 
   return <Screen><View style={styles.wrap}>
-    <Text style={[styles.logo,{color:theme.colors.text}]}>TFN</Text>
+    <BrandMark />
     <Text style={[styles.title,{color:theme.colors.text}]}>Welcome back</Text>
     <Text style={[styles.sub,{color:theme.colors.mutedText}]}>Sign in to your Founder Nation account.</Text>
     <Pressable disabled={busy} onPress={()=>social('google')} style={[styles.social,{borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}><Text style={{color:theme.colors.text,fontWeight:'800'}}>Continue with Google</Text></Pressable>
