@@ -68,7 +68,14 @@ export async function getHomeContent(): Promise<HomeContent> {
 export async function enrichHomeContent(base: HomeContent): Promise<HomeContent> {
   const cacheKey = 'home:content:v2:enriched';
   const cached = getCached<HomeContent>(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    return {
+      ...cached,
+      latest: base.latest,
+      featured: base.featured,
+      forYou: base.forYou,
+    };
+  }
 
   let categories: TfnCategory[] = [];
   try {
