@@ -3,6 +3,8 @@ import { useAppTheme } from '../theme';
 
 type Props = { compact?: boolean };
 
+// Canonical TFN brand mark. Keep this component asset-free so web bundling cannot depend on missing logo files.
+
 export function BrandMark({ compact = false }: Props) {
   const theme = useAppTheme();
 
