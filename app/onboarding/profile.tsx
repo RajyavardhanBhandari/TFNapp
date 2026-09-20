@@ -145,7 +145,7 @@ export default function OnboardingProfile() {
   const progress = step / 2;
 
   return (
-    <Screen>
+    <Screen scroll={false} padding={false}>
       <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
         <View style={styles.progressRow}>
           <View style={styles.progressCopy}>
