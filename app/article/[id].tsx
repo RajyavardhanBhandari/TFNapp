@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Image, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import RenderHTML from 'react-native-render-html';
 import { AppHeader } from '../../src/components/AppHeader';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { Screen } from '../../src/components/Screen';
-import { getArticleById, getArticles, getRelatedArticlesForArticle, type TfnArticle } from '../../src/content';
+import { getArticleById, getRelatedArticlesForArticle, type TfnArticle } from '../../src/content';
 import { getArticleReadingTime, getRelatedArticles, sanitizeArticleHtml } from '../../src/content/article';
 import { useAppTheme } from '../../src/theme';
 
