@@ -3,7 +3,7 @@ import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppHeader } from '../../src/components/AppHeader';
 import { Screen } from '../../src/components/Screen';
-import { ThemeMode, useAppTheme, useThemePreference } from '../../src/theme';
+import { useAppTheme, useThemePreference, type ThemeMode } from '../../src/theme';
 import { supabase } from '../../src/lib/supabase';
 import { useAuth } from '../../src/user/auth';
 
