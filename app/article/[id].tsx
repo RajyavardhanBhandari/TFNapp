@@ -87,7 +87,7 @@ export default function ArticleDetailScreen() {
               <Text style={[styles.meta, { color: theme.colors.mutedText }]}>{new Date(article.publishedAt).toLocaleDateString()} · {getArticleReadingTime(article)} min read</Text>
             </View>
           </View>
-          {article.featuredImage?.url ? <Image accessibilityLabel={article.featuredImage.alt || article.title} source={{ uri: article.featuredImage.url }} resizeMode="cover" style={[styles.hero, { aspectRatio: article.featuredImage.width && article.featuredImage.height ? article.featuredImage.width / article.featuredImage.height : 16 / 9 }]} /> : null}
+          {article.featuredImage?.url ? <Image accessibilityLabel={article.featuredImage.alt || article.title} source={{ uri: article.featuredImage.url }} resizeMode="cover" style={[styles.hero, { backgroundColor: theme.colors.surface, aspectRatio: article.featuredImage.width && article.featuredImage.height ? article.featuredImage.width / article.featuredImage.height : 16 / 9 }]} /> : null}
           <View style={[styles.actions, { borderColor: theme.colors.border }]}>
             <Pressable accessibilityRole="button" accessibilityLabel="Save article" onPress={() => undefined} style={styles.action}><Text style={[styles.actionText, { color: theme.colors.text }]}>Save</Text></Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Share article" onPress={() => void share()} style={styles.action}><Text style={[styles.actionText, { color: theme.colors.text }]}>Share</Text></Pressable>
