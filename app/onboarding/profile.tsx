@@ -249,7 +249,7 @@ export default function OnboardingProfile() {
           )}
         </Animated.View>
 
-        {error ? <Text accessibilityRole="alert" style={[styles.error, { color: theme.colors.text }]}>{error}</Text> : null}
+        {error ? <Text accessibilityRole="alert" style={[styles.error, { color: theme.colors.error }]}>{error}</Text> : null}
 
         <ActionButton label={busy ? 'Saving…' : step === 1 ? 'Continue' : 'Continue to personalization'} onPress={step === 1 ? next : save} disabled={busy} />
         {step === 2 ? <ActionButton label="Back" onPress={() => { setError(''); animateToStep(1); }} secondary /> : null}
