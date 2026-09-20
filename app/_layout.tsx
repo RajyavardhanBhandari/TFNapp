@@ -1,6 +1,13 @@
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../src/user/auth';
+import { ThemeProvider } from '../src/theme';
 
 export default function RootLayout() {
-  return <AuthProvider><Stack screenOptions={{ headerShown: false }} /></AuthProvider>;
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }
