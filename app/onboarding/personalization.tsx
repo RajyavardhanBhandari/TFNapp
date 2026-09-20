@@ -17,7 +17,7 @@ export default function PersonalizationOnboarding() {
     <Text style={[styles.sub, { color: theme.colors.mutedText }]}>Choose the topics, industries and startup stories you care about. Your choices are private and can be changed anytime.</Text>
     <Text style={[styles.count, { color: theme.colors.mutedText }]}>{selected.length} selected · Minimum 3</Text>
     <View style={styles.chips}>{TFN_INTERESTS.map((item) => { const active = selected.some((x) => x.key === item.key && x.type === item.type); return <Pressable key={`${item.type}:${item.key}`} onPress={() => toggle(item)} accessibilityRole="checkbox" accessibilityState={{ checked: active }} accessibilityLabel={`${item.label}, ${active ? 'selected' : 'not selected'}`} style={[styles.chip, { borderColor: active ? theme.colors.accent : theme.colors.border, backgroundColor: active ? theme.colors.accent : theme.colors.surface }]}><Text style={{ color: active ? theme.colors.inverseText : theme.colors.text, fontWeight: '700' }}>{active ? '✓ ' : ''}{item.label}</Text></Pressable>; })}</View>
-    {error ? <Text style={[styles.error, { color: '#C62828' }]}>{error}</Text> : null}
+    {error ? <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text> : null}
     <Pressable disabled={busy} onPress={finish} style={[styles.button, { backgroundColor: theme.colors.accent, opacity: busy ? 0.65 : 1 }]}><Text style={{ color: theme.colors.inverseText, fontWeight: '800' }}>{busy ? 'Saving…' : 'Continue to TFN'}</Text></Pressable>
     <Pressable disabled={busy} onPress={skip} accessibilityRole="button" style={styles.skip}><Text style={{ color: theme.colors.text, fontWeight: '700' }}>Skip for now</Text></Pressable>
   </ScrollView></Screen>;
