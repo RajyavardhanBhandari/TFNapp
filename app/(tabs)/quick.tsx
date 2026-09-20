@@ -410,6 +410,7 @@ const styles = StyleSheet.create({
     top: 22,
     borderWidth: 2,
     borderColor: theme.colors.inverseText,
+    backgroundColor: theme.colors.text,
     paddingHorizontal: 10,
     paddingVertical: 6,
     transform: [{ rotate: '-8deg' }],
