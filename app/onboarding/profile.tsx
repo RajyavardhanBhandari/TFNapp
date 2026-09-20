@@ -249,7 +249,7 @@ export default function OnboardingProfile() {
           )}
         </Animated.View>
 
-        {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+        {error ? <Text accessibilityRole="alert" style={[styles.error, { color: theme.colors.text }]}>{error}</Text> : null}
 
         <ActionButton label={busy ? 'Saving…' : step === 1 ? 'Continue' : 'Continue to personalization'} onPress={step === 1 ? next : save} disabled={busy} />
         {step === 2 ? <ActionButton label="Back" onPress={() => { setError(''); animateToStep(1); }} secondary /> : null}
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   avatarDone: { fontSize: 30, fontWeight: '900' },
   avatarLabel: { fontSize: 12, fontWeight: '700', marginTop: 8 },
   label: { fontSize: 13, fontWeight: '800', marginBottom: 8, marginTop: 8 },
-  optional: { fontWeight: '500', color: '#888888' },
+  optional: { fontWeight: '500', color: theme.colors.mutedText },
   input: { minHeight: 52, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, fontSize: 16, marginBottom: 12 },
   textarea: { minHeight: 112, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, textAlignVertical: 'top', marginBottom: 14 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
