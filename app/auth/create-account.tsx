@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
+import { BrandMark } from '../../src/components/BrandMark';
 import { useAppTheme } from '../../src/theme';
 import { supabase } from '../../src/lib/supabase';
 import { signInWithProvider } from '../../src/user/oauth';
@@ -22,7 +23,7 @@ export default function CreateAccountScreen(){
     try{setBusy(true);setError('');await signInWithProvider(provider);}catch(e){setError(e instanceof Error?e.message:'Social sign-in could not be started.');}finally{setBusy(false);}
   }
   return <Screen><View style={styles.wrap}>
-    <Text style={[styles.logo,{color:theme.colors.text}]}>TFN</Text><Text style={[styles.title,{color:theme.colors.text}]}>Join The Founder Nation</Text><Text style={[styles.sub,{color:theme.colors.mutedText}]}>Create your account and make TFN more relevant to you.</Text>
+    <BrandMark /><Text style={[styles.title,{color:theme.colors.text}]}>Join The Founder Nation</Text><Text style={[styles.sub,{color:theme.colors.mutedText}]}>Create your account and make TFN more relevant to you.</Text>
     <Pressable disabled={busy} onPress={()=>social('google')} style={[styles.social,{borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}><Text style={{color:theme.colors.text,fontWeight:'800'}}>Continue with Google</Text></Pressable>
     <Pressable disabled={busy} onPress={()=>social('apple')} style={[styles.social,{borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}><Text style={{color:theme.colors.text,fontWeight:'800'}}>Continue with Apple</Text></Pressable>
     <Link href="/auth/phone" style={[styles.phone,{color:theme.colors.text}]}>Sign in with phone</Link>
@@ -33,4 +34,4 @@ export default function CreateAccountScreen(){
     <Link href="/auth/sign-in" style={[styles.link,{color:theme.colors.text}]}>Already have an account? Sign in</Link>
   </View></Screen>
 }
-const styles=StyleSheet.create({wrap:{maxWidth:460,width:'100%',alignSelf:'center',paddingTop:48},logo:{fontSize:20,fontWeight:'900',letterSpacing:3},title:{fontSize:34,fontWeight:'800',marginTop:34},sub:{fontSize:16,lineHeight:24,marginTop:8,marginBottom:22},social:{height:50,borderWidth:1,borderRadius:12,alignItems:'center',justifyContent:'center',marginBottom:10},phone:{fontWeight:'800',textAlign:'center',padding:12},or:{textAlign:'center',marginVertical:14},input:{height:52,borderWidth:1,borderRadius:12,paddingHorizontal:16,fontSize:16,marginBottom:12},button:{height:52,borderRadius:12,alignItems:'center',justifyContent:'center'},buttonText:{fontWeight:'800',fontSize:16},link:{fontWeight:'700',textAlign:'center',marginTop:20},error:{color:'#C62828',marginBottom:8}});
+const styles=StyleSheet.create({wrap:{maxWidth:460,width:'100%',alignSelf:'center',paddingTop:48},logo:{fontSize:20,fontWeight:'900',letterSpacing:3},title:{fontSize:34,fontWeight:'800',marginTop:34},sub:{fontSize:16,lineHeight:24,marginTop:8,marginBottom:22},social:{height:50,borderWidth:1,borderRadius:12,alignItems:'center',justifyContent:'center',marginBottom:10},phone:{fontWeight:'800',textAlign:'center',padding:12},or:{textAlign:'center',marginVertical:14},input:{height:52,borderWidth:1,borderRadius:12,paddingHorizontal:16,fontSize:16,marginBottom:12},button:{height:52,borderRadius:12,alignItems:'center',justifyContent:'center'},buttonText:{fontWeight:'800',fontSize:16},link:{fontWeight:'700',textAlign:'center',marginTop:20},error:{color:theme.colors.error,marginBottom:8}});
