@@ -1,4 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ColorSchemeName, useColorScheme } from 'react-native';
+import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+
+export type ThemeMode = 'system' | 'light' | 'dark';
 
 export type Theme = {
   colors: {
@@ -45,10 +49,54 @@ const dark: Theme = {
   },
 };
 
+const STORAGE_KEY = 'tfn:theme-mode';
+
+type ThemePreference = {
+  mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
+};
+
+const ThemePreferenceContext = createContext<ThemePreference | undefined>(undefined);
+
 export function getTheme(scheme: ColorSchemeName): Theme {
   return scheme === 'dark' ? dark : light;
 }
 
+export function ThemeProvider({ children }: PropsWithChildren) {
+  const systemScheme = useColorScheme();
+  const [mode, setModeState] = useState<ThemeMode>('system');
+
+  useEffect(() => {
+    void AsyncStorage.getItem(STORAGE_KEY).then((value) => {
+      if (value === 'light' || value === 'dark' || value === 'system') {
+        setModeState(value);
+      }
+    });
+  }, []);
+
+  const setMode = (nextMode: ThemeMode) => {
+    setModeState(nextMode);
+    void AsyncStorage.setItem(STORAGE_KEY, nextMode);
+  };
+
+  const value = useMemo(() => ({ mode, setMode }), [mode]);
+
+  return (
+    <ThemePreferenceContext.Provider value={value}>
+      {children}
+    </ThemePreferenceContext.Provider>
+  );
+}
+
+export function useThemePreference(): ThemePreference {
+  const context = useContext(ThemePreferenceContext);
+  if (!context) throw new Error('useThemePreference must be used inside ThemeProvider');
+  return context;
+}
+
 export function useAppTheme(): Theme {
-  return getTheme(useColorScheme());
+  const systemScheme = useColorScheme();
+  const { mode } = useThemePreference();
+  const scheme = mode === 'system' ? systemScheme : mode;
+  return getTheme(scheme);
 }
