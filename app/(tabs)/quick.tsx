@@ -283,7 +283,7 @@ export default function QuickScreen() {
                   },
                 ]}
               >
-                <Text style={styles.feedbackText}>NOT FOR ME</Text>
+                <Text style={[styles.feedbackText, { color: theme.colors.inverseText }]}>NOT FOR ME</Text>
               </Animated.View>
 
               <Animated.View
@@ -300,7 +300,7 @@ export default function QuickScreen() {
                   },
                 ]}
               >
-                <Text style={styles.feedbackText}>INTERESTED</Text>
+                <Text style={[styles.feedbackText, { color: theme.colors.inverseText }]}>INTERESTED</Text>
               </Animated.View>
             </Animated.View>
           </View>
@@ -409,12 +409,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 22,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.inverseText,
     paddingHorizontal: 10,
     paddingVertical: 6,
     transform: [{ rotate: '-8deg' }],
   },
-  feedbackText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
+  feedbackText: { fontWeight: '900', fontSize: 14 },
   actions: { flexDirection: 'row', gap: 8, marginTop: 18 },
   action: {
     flex: 1,
