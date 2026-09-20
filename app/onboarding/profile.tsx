@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Animated, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
 import { useAppTheme } from '../../src/theme';
