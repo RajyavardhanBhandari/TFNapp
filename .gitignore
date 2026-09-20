@@ -9,3 +9,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 expo-env.d.ts
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
