@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppHeader } from '../../src/components/AppHeader';
 import { Screen } from '../../src/components/Screen';
 import { useAppTheme } from '../../src/theme';
 import { supabase } from '../../src/lib/supabase';
-import { PROFILE_INTERESTS, PROFILE_ROLES, type Profile, type ProfileGender, type ProfileRole } from '../../src/user/types';
+import { PROFILE_ROLES, type Profile, type ProfileGender, type ProfileRole } from '../../src/user/types';
+import { TFN_INTERESTS } from '../../src/user/interests';
 import { getAvatarUrl, pickAndUploadAvatar } from '../../src/user/profile';
 
 const GENDERS: ProfileGender[] = ['Male', 'Female', 'Prefer not to say'];
@@ -23,7 +24,7 @@ export default function EditProfile(){
     <Text style={[styles.label,{color:theme.colors.text}]}>Gender</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>{GENDERS.map(item=><Pressable key={item} onPress={()=>update('gender',item)} style={[styles.chip,{borderColor:profile.gender===item?theme.colors.text:theme.colors.border,backgroundColor:profile.gender===item?theme.colors.text:theme.colors.surface}]}><Text style={{color:profile.gender===item?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</ScrollView>
     <Text style={[styles.label,{color:theme.colors.text}]}>Role</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>{PROFILE_ROLES.map(item=><Pressable key={item} onPress={()=>update('role',item as ProfileRole)} style={[styles.chip,{borderColor:profile.role===item?theme.colors.text:theme.colors.border,backgroundColor:profile.role===item?theme.colors.text:theme.colors.surface}]}><Text style={{color:profile.role===item?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</ScrollView>
     {(['phone_number','company_name','job_title','industry','location','website','linkedin_url','instagram_url','bio'] as const).map(field=><TextInput key={field} value={String(profile[field]??'')} onChangeText={value=>update(field,value)} multiline={field==='bio'} placeholder={field.replaceAll('_',' ')} placeholderTextColor={theme.colors.mutedText} autoCapitalize={field.includes('url')?'none':'sentences'} style={[field==='bio'?styles.textarea:styles.input,{color:theme.colors.text,borderColor:theme.colors.border,backgroundColor:theme.colors.surface}]}/>)}
-    <Text style={[styles.label,{color:theme.colors.text}]}>Interests</Text><View style={styles.chips}>{PROFILE_INTERESTS.map(item=><Pressable key={item} onPress={()=>update('interests',profile.interests.includes(item)?profile.interests.filter(x=>x!==item):[...profile.interests,item])} style={[styles.chip,{borderColor:profile.interests.includes(item)?theme.colors.accent:theme.colors.border,backgroundColor:profile.interests.includes(item)?theme.colors.accent:theme.colors.surface}]}><Text style={{color:profile.interests.includes(item)?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item}</Text></Pressable>)}</View>
+    <Text style={[styles.label,{color:theme.colors.text}]}>Interests</Text><View style={styles.chips}>{TFN_INTERESTS.map(item=><Pressable key={item.key} onPress={()=>update('interests',profile.interests.includes(item.label)?profile.interests.filter(x=>x!==item.label):[...profile.interests,item.label])} style={[styles.chip,{borderColor:profile.interests.includes(item.label)?theme.colors.accent:theme.colors.border,backgroundColor:profile.interests.includes(item.label)?theme.colors.accent:theme.colors.surface}]}><Text style={{color:profile.interests.includes(item.label)?theme.colors.inverseText:theme.colors.text,fontWeight:'700'}}>{item.label}</Text></Pressable>)}</View>
     {message?<Text style={[styles.message,{color:theme.colors.mutedText}]}>{message}</Text>:null}<Pressable disabled={busy} onPress={save} style={[styles.button,{backgroundColor:theme.colors.accent}]}><Text style={{color:theme.colors.inverseText,fontWeight:'800'}}>{busy?'Saving…':'Save changes'}</Text></Pressable><Pressable onPress={()=>router.back()} style={styles.cancel}><Text style={{color:theme.colors.text,fontWeight:'700'}}>Done</Text></Pressable>
   </ScrollView></Screen>
 }
