@@ -3,11 +3,9 @@ import { Link, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { useAppTheme } from '../../src/theme';
-import { useAppTheme } from '../../src/theme';
 import { supabase } from '../../src/lib/supabase';
 
 export default function PhoneAuthScreen() {
-  const theme = useAppTheme();
   const theme = useAppTheme();
   const router = useRouter();
   const [phone, setPhone] = useState('');
