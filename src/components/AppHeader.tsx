@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../theme';
+import { BrandMark } from './BrandMark';
 
 type Props = { title?: string; back?: boolean };
 
@@ -15,7 +16,7 @@ export function AppHeader({ title, back = false }: Props) {
             <Text style={[styles.icon, { color: theme.colors.icon }]}>‹</Text>
           </Pressable>
         ) : null}
-        <Text style={[styles.brand, { color: theme.colors.text }]}>{title ?? 'TFN'}</Text>
+        {title === 'TFN' || (!title && !back) ? <BrandMark compact /> : <Text style={[styles.brand, { color: theme.colors.text }]}>{title ?? 'TFN'}</Text>}
       </View>
       <View style={styles.actions}>
         <Pressable accessibilityRole="button" accessibilityLabel="Search" hitSlop={8} onPress={() => router.push('/search')} style={styles.iconButton}>
