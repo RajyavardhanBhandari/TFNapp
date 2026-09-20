@@ -3,9 +3,11 @@ import { Link, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { useAppTheme } from '../../src/theme';
+import { useAppTheme } from '../../src/theme';
 import { supabase } from '../../src/lib/supabase';
 
 export default function PhoneAuthScreen() {
+  const theme = useAppTheme();
   const theme = useAppTheme();
   const router = useRouter();
   const [phone, setPhone] = useState('');
@@ -42,7 +44,7 @@ export default function PhoneAuthScreen() {
         <Text style={[styles.sub, { color: theme.colors.mutedText }]}>Use a one-time verification code. Your phone number is only used for authentication.</Text>
         <TextInput keyboardType="phone-pad" placeholder="+91 98765 43210" placeholderTextColor={theme.colors.mutedText} value={phone} onChangeText={setPhone} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
         {sent ? <TextInput keyboardType="number-pad" placeholder="Verification code" placeholderTextColor={theme.colors.mutedText} value={code} onChangeText={setCode} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} /> : null}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={[styles.error,{color:theme.colors.error}]}>{error}</Text> : null}
         <Pressable disabled={busy} onPress={sent ? verifyCode : sendCode} style={[styles.button, { backgroundColor: theme.colors.accent }]}>
           <Text style={{ color: theme.colors.inverseText, fontWeight: '800' }}>{busy ? 'Please wait…' : sent ? 'Verify code' : 'Send code'}</Text>
         </Pressable>
@@ -60,5 +62,5 @@ const styles = StyleSheet.create({
   input: { height: 52, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, fontSize: 16, marginBottom: 12 },
   button: { height: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   link: { fontWeight: '700', textAlign: 'center', marginTop: 18 },
-  error: { color: '#C62828', marginBottom: 8 },
+  error: { marginBottom: 8 },
 });
