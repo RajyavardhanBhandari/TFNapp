@@ -174,7 +174,7 @@ export default function OnboardingProfile() {
               <Text style={[styles.label, { color: theme.colors.text }]}>Name</Text>
               <TextInput autoCapitalize="words" placeholder="Your name" placeholderTextColor={theme.colors.mutedText} value={name} onChangeText={setName} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
 
-              <Text style={[styles.label, { color: theme.colors.text }]}>Gender <Text style={styles.optional}>optional</Text></Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Gender <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
               <View style={styles.chips}>
                 {GENDERS.map((item) => {
                   const active = gender === item;
@@ -182,7 +182,7 @@ export default function OnboardingProfile() {
                 })}
               </View>
 
-              <Text style={[styles.label, { color: theme.colors.text }]}>Phone <Text style={styles.optional}>optional</Text></Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Phone <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
               <TextInput keyboardType="phone-pad" placeholder="+91…" placeholderTextColor={theme.colors.mutedText} value={phone} onChangeText={setPhone} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
             </>
           ) : (
@@ -202,7 +202,7 @@ export default function OnboardingProfile() {
                 <>
                   <Text style={[styles.label, { color: theme.colors.text }]}>Company / startup</Text>
                   <TextInput placeholder="Optional" placeholderTextColor={theme.colors.mutedText} value={company} onChangeText={setCompany} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
-                  <Text style={[styles.label, { color: theme.colors.text }]}>Job title <Text style={styles.optional}>optional</Text></Text>
+                  <Text style={[styles.label, { color: theme.colors.text }]}>Job title <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
                   <TextInput placeholder="e.g. CEO, Partner, Product Manager" placeholderTextColor={theme.colors.mutedText} value={jobTitle} onChangeText={setJobTitle} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
                 </>
               ) : (
@@ -214,15 +214,15 @@ export default function OnboardingProfile() {
                 </>
               )}
 
-              <Text style={[styles.label, { color: theme.colors.text }]}>Industry / sector <Text style={styles.optional}>optional</Text></Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Industry / sector <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
               <TextInput placeholder="e.g. Fintech, SaaS, AI" placeholderTextColor={theme.colors.mutedText} value={industry} onChangeText={setIndustry} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
 
-              <Text style={[styles.label, { color: theme.colors.text }]}>Location <Text style={styles.optional}>optional</Text></Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Location <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
               <TextInput placeholder="City, Country" placeholderTextColor={theme.colors.mutedText} value={location} onChangeText={setLocation} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
 
               {roleFields === 'founder' ? (
                 <>
-                  <Text style={[styles.label, { color: theme.colors.text }]}>Startup stage <Text style={styles.optional}>optional</Text></Text>
+                  <Text style={[styles.label, { color: theme.colors.text }]}>Startup stage <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
                   <View style={styles.chips}>
                     {STAGES.map((item) => {
                       const active = startupStage === item;
@@ -234,12 +234,12 @@ export default function OnboardingProfile() {
 
               {roleFields === 'investor' ? (
                 <>
-                  <Text style={[styles.label, { color: theme.colors.text }]}>Investor / fund type <Text style={styles.optional}>optional</Text></Text>
+                  <Text style={[styles.label, { color: theme.colors.text }]}>Investor / fund type <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
                   <TextInput placeholder="VC, Angel, Family Office…" placeholderTextColor={theme.colors.mutedText} value={investorType} onChangeText={setInvestorType} style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
                 </>
               ) : null}
 
-              <Text style={[styles.label, { color: theme.colors.text }]}>Short bio <Text style={styles.optional}>optional</Text></Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Short bio <Text style={[styles.optional, { color: theme.colors.mutedText }]}>optional</Text></Text>
               <TextInput multiline numberOfLines={4} placeholder="A sentence or two about you" placeholderTextColor={theme.colors.mutedText} value={bio} onChangeText={setBio} style={[styles.textarea, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]} />
               <View style={[styles.nextCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 <Text style={[styles.nextTitle, { color: theme.colors.text }]}>Next: personalize your feed</Text>
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   avatarDone: { fontSize: 30, fontWeight: '900' },
   avatarLabel: { fontSize: 12, fontWeight: '700', marginTop: 8 },
   label: { fontSize: 13, fontWeight: '800', marginBottom: 8, marginTop: 8 },
-  optional: { fontWeight: '500', color: theme.colors.mutedText },
+  optional: { fontWeight: '500' },
   input: { minHeight: 52, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, fontSize: 16, marginBottom: 12 },
   textarea: { minHeight: 112, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, textAlignVertical: 'top', marginBottom: 14 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
@@ -285,5 +285,5 @@ const styles = StyleSheet.create({
   nextCopy: { fontSize: 13, lineHeight: 19, marginTop: 4 },
   button: { minHeight: 54, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
   disabled: { opacity: 0.6 },
-  error: { color: '#C62828', fontSize: 13, lineHeight: 20, marginTop: 8, marginBottom: 4 },
+  error: { fontSize: 13, lineHeight: 20, marginTop: 8, marginBottom: 4 },
 });
