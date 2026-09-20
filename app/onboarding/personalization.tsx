@@ -81,7 +81,7 @@ export default function PersonalizationOnboarding() {
   }
 
   return (
-    <Screen>
+    <Screen scroll={false} padding={false}>
       <ScrollView contentContainerStyle={styles.wrap} showsVerticalScrollIndicator={false}>
         <Animated.View style={{ opacity: intro, transform: [{ translateY: intro.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }] }}>
           <View style={styles.headerRow}>
