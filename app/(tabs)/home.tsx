@@ -5,14 +5,14 @@ import { AppHeader } from '../../src/components/AppHeader';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { Screen } from '../../src/components/Screen';
 import { getArticles } from '../../src/content';
-import { getHomeContent, type HomeContent } from '../../src/content/home';
+import { enrichHomeContent, getHomeContent, type HomeContent } from '../../src/content/home';
 import { useAppTheme } from '../../src/theme';
 
 function Section({title,children}:{title:string;children:ReactNode}){const theme=useAppTheme();return <View style={styles.section}><Text style={[styles.sectionTitle,{color:theme.colors.text}]}>{title}</Text>{children}</View>}
 function Skeleton({large=false}:{large?:boolean}){const theme=useAppTheme();return <View style={[styles.skeleton,{backgroundColor:theme.colors.surface},large&&styles.skeletonLarge]}/>}
 
 export default function HomeScreen(){const theme=useAppTheme();const router=useRouter();const[data,setData]=useState<HomeContent>();const[loading,setLoading]=useState(true);const[refreshing,setRefreshing]=useState(false);const[loadingMore,setLoadingMore]=useState(false);const[page,setPage]=useState(1);const[hasMore,setHasMore]=useState(true);const[error,setError]=useState(false);
-const load=useCallback(async(refresh=false)=>{try{setError(false);if(refresh)setRefreshing(true);else setLoading(true);setData(await getHomeContent());setPage(1);setHasMore(true)}catch{setError(true)}finally{setLoading(false);setRefreshing(false)}},[]);useEffect(()=>{void load()},[load]);
+const load=useCallback(async(refresh=false)=>{try{setError(false);if(refresh)setRefreshing(true);else setLoading(true);const primary=await getHomeContent();setData(primary);setPage(1);setHasMore(true);setLoading(false);setRefreshing(false);const enriched=await enrichHomeContent(primary);setData(enriched)}catch{setError(true);setLoading(false);setRefreshing(false)}},[]);useEffect(()=>{void load()},[load]);
 const loadMore=useCallback(async()=>{if(!data||loadingMore||!hasMore)return;try{setLoadingMore(true);const next=page+1;const result=await getArticles({page:next,perPage:8});setData(current=>current?{...current,latest:[...current.latest,...result.items]}:current);setPage(next);setHasMore(result.pagination.hasNextPage)}finally{setLoadingMore(false)}},[data,hasMore,loadingMore,page]);
 const open=(id:number)=>router.push({pathname:'/article/[id]',params:{id:String(id)}});const horizontal=(title:string,items:HomeContent['latest'])=>items.length?<Section title={title}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontal}>{items.slice(0,5).map(a=><View key={a.id} style={styles.horizontalCard}><ArticleCard article={a} variant="compact" onPress={()=>open(a.id)}/></View>)}</ScrollView></Section>:null;
 return <Screen scroll={false} padding={false}><AppHeader/><ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={()=>void load(true)} tintColor={theme.colors.icon}/>} onScroll={({nativeEvent})=>{const{layoutMeasurement,contentOffset,contentSize}=nativeEvent;if(layoutMeasurement.height+contentOffset.y>=contentSize.height-700)void loadMore()}} scrollEventThrottle={250}>
