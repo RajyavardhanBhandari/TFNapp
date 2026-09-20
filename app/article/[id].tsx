@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   metaCopy: { flex: 1 },
   author: { fontSize: 14, fontWeight: '800' },
   meta: { fontSize: 12, marginTop: 3 },
-  hero: { width: '100%', maxHeight: 420, borderRadius: 16, backgroundColor: '#E7E7EA' },
+  hero: { width: '100%', maxHeight: 420, borderRadius: 16 },
   actions: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, marginVertical: 20 },
   action: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   actionText: { fontSize: 13, fontWeight: '800' },
