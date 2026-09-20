@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Screen } from '../../src/components/Screen';
@@ -33,7 +33,7 @@ export default function PersonalizationOnboarding() {
   const intro = useRef(new Animated.Value(0)).current;
   const chipScales = useRef(new Map<string, Animated.Value>()).current;
 
-  useMemo(() => {
+  useEffect(() => {
     Animated.timing(intro, { toValue: 1, duration: 420, useNativeDriver: true }).start();
   }, [intro]);
 
@@ -122,7 +122,7 @@ export default function PersonalizationOnboarding() {
                           accessibilityLabel={`${item.label}, ${active ? 'selected' : 'not selected'}`}
                           style={[styles.chip, { borderColor: active ? theme.colors.accent : theme.colors.border, backgroundColor: active ? theme.colors.accent : theme.colors.surface }]}
                         >
-                          <Text style={{ color: active ? theme.colors.inverseText : theme.colors.text, fontWeight: '750' as any }}>{active ? '✓ ' : ''}{item.label}</Text>
+                          <Text style={{ color: active ? theme.colors.inverseText : theme.colors.text, fontWeight: '800' }}>{active ? '✓ ' : ''}{item.label}</Text>
                         </Pressable>
                       </Animated.View>
                     );
